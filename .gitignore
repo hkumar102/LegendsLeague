@@ -1,3 +1,27 @@
 
 # Ignore local temp scripts
 *.sh
+
+# .NET build output
+**/bin/
+**/obj/
+
+# VS/VSCode temp
+.vscode/
+*.user
+*.suo
+
+# Rider / JetBrains
+.idea/
+
+# Mac system files
+.DS_Store
+
+# Logs
+*.log
+
+# Ignore local temp scripts
+*.sh
+
+# Optional: ignore generated OpenAPI if you only use CI artifact
+/packages/contracts/openapi.json
