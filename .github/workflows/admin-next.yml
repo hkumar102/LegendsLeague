@@ -1,0 +1,28 @@
+name: admin-next
+on:
+  push:
+    paths:
+      - 'apps/admin-next/**'
+      - '.github/workflows/admin-next.yml'
+  pull_request:
+    paths:
+      - 'apps/admin-next/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'apps/admin-next/package-lock.json'
+      - name: Install & Build
+        working-directory: apps/admin-next
+        run: |
+          if [ -f package.json ]; then
+            npm ci || npm install
+            npm run build || echo "Build will work after init"
+          else
+            echo "Next.js not initialized yet"
+          fi

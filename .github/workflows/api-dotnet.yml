@@ -1,0 +1,33 @@
+name: api-dotnet
+on:
+  push:
+    paths:
+      - 'apps/api-dotnet/**'
+      - '.github/workflows/api-dotnet.yml'
+  pull_request:
+    paths:
+      - 'apps/api-dotnet/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        run: |
+          cd apps/api-dotnet
+          dotnet --info
+          echo "Tip: create solution & project under apps/api-dotnet before this step"
+      - name: Build
+        run: echo "Build command goes here once project is created"
+      - name: Publish OpenAPI
+        run: |
+          echo "{}" > packages/contracts/openapi.json
+      - name: Upload artifact (contracts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: contracts
+          path: packages/contracts/openapi.json

@@ -1,0 +1,22 @@
+  README.md
+apps/
+  api-dotnet/
+    README.md
+  admin-next/
+    README.md
+  mobile-flutter/
+    README.md
+packages/
+  contracts/
+    README.md
+    openapi.json
+  design-tokens/
+    tokens.json
+    README.md
+infra/
+  README.md
+.github/
+  workflows/
+    api-dotnet.yml
+    admin-next.yml
+    mobile-flutter.yml

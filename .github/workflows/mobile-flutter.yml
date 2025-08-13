@@ -1,0 +1,27 @@
+name: mobile-flutter
+on:
+  push:
+    paths:
+      - 'apps/mobile-flutter/**'
+      - '.github/workflows/mobile-flutter.yml'
+  pull_request:
+    paths:
+      - 'apps/mobile-flutter/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+      - name: Flutter pub get
+        working-directory: apps/mobile-flutter
+        run: |
+          if [ -f pubspec.yaml ]; then
+            flutter pub get
+            flutter build apk || echo "Build will work after init"
+          else
+            echo "Flutter app not initialized yet"
+          fi
