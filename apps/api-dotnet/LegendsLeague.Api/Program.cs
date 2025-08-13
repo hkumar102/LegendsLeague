@@ -1,3 +1,4 @@
+using LegendsLeague.Application;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
@@ -12,6 +13,7 @@ builder.Host.UseSerilog((ctx, cfg) =>
 });
 
 // Services
+builder.Services.AddApplicationServices();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -37,7 +39,6 @@ builder.Services.AddCors(opt =>
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
-
 app.UseCors("dev");
 
 app.UseSwagger();
@@ -48,7 +49,6 @@ app.UseSwaggerUI(c =>
 });
 
 app.MapControllers();
-
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }))
    .WithName("Health")
    .WithTags("System");
