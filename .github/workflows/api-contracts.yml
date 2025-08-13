@@ -1,0 +1,48 @@
+name: api-contracts
+
+on:
+  push:
+    paths:
+      - 'apps/api-dotnet/**'
+      - '.github/workflows/api-contracts.yml'
+  pull_request:
+    paths:
+      - 'apps/api-dotnet/**'
+      - '.github/workflows/api-contracts.yml'
+
+jobs:
+  export-openapi:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api-dotnet/LegendsLeague.Api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore & Build
+        run: |
+          dotnet restore
+          dotnet build -c Release
+
+      - name: Install Swagger CLI
+        run: dotnet tool install -g Swashbuckle.AspNetCore.Cli
+
+      - name: Export OpenAPI (v1)
+        run: |
+          export PATH="$PATH:/home/runner/.dotnet/tools"
+          mkdir -p ../../../packages/contracts
+          swagger tofile \
+            --output ../../../packages/contracts/openapi.json \
+            bin/Release/net8.0/LegendsLeague.Api.dll v1
+
+      - name: Upload openapi.json artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi.json
+          path: packages/contracts/openapi.json
