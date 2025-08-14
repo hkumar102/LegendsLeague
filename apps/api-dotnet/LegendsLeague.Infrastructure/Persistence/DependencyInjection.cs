@@ -3,6 +3,7 @@ using LegendsLeague.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using LegendsLeague.Application.Abstractions.Persistence;
 
 namespace LegendsLeague.Infrastructure.Persistence;
 
@@ -39,6 +40,8 @@ public static class DependencyInjection
                 sp.GetRequiredService<SoftDeleteSaveChangesInterceptor>());
         });
 
-        return services;
+            services.AddScoped<IFixturesDbContext>(sp => sp.GetRequiredService<FixturesDbContext>());
+
+    return services;
     }
 }
