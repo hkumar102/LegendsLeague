@@ -1,24 +1,32 @@
+using LegendsLeague.Application.Abstractions.Security;
 using LegendsLeague.Domain.Common;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace LegendsLeague.Infrastructure.Persistence.Interceptors;
 
 /// <summary>
-/// Sets Created*/Modified* fields for entities implementing IAuditable.
-/// Uses DateTimeOffset.UtcNow; CreatedBy/ModifiedBy can be set later via ICurrentUser.
+/// Intercepts SaveChanges to populate Created*/Modified* fields on <see cref="IAuditable"/> entities.
 /// </summary>
 public sealed class AuditingSaveChangesInterceptor : SaveChangesInterceptor
 {
-    private static readonly Func<DateTimeOffset> UtcNow = () => DateTimeOffset.UtcNow;
+    private static readonly Func<DateTimeOffset> NowUtc = () => DateTimeOffset.UtcNow;
+    private readonly ICurrentUser _currentUser;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuditingSaveChangesInterceptor"/> class.
+    /// </summary>
+    /// <param name="currentUser">Provider for current user identity.</param>
+    public AuditingSaveChangesInterceptor(ICurrentUser currentUser) => _currentUser = currentUser;
+
+    /// <inheritdoc />
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
         ApplyAudit(eventData.Context);
         return base.SavingChanges(eventData, result);
     }
 
+    /// <inheritdoc />
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
@@ -28,27 +36,28 @@ public sealed class AuditingSaveChangesInterceptor : SaveChangesInterceptor
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private static void ApplyAudit(DbContext? context)
+    private void ApplyAudit(DbContext? context)
     {
         if (context is null) return;
 
-        var now = UtcNow();
+        var now = NowUtc();
+        var userId = _currentUser.UserId;
 
         foreach (var entry in context.ChangeTracker.Entries<IAuditable>())
         {
-            switch (entry.State)
+            if (entry.State == EntityState.Added)
             {
-                case EntityState.Added:
-                    entry.Entity.CreatedAtUtc = now;
-                    // entry.Entity.CreatedBy = currentUserId; // wire later via ICurrentUser
-                    break;
-                case EntityState.Modified:
-                    entry.Property(nameof(IAuditable.CreatedAtUtc)).IsModified = false;
-                    entry.Property(nameof(IAuditable.CreatedBy)).IsModified    = false;
+                entry.Entity.CreatedAtUtc = now;
+                if (userId.HasValue) entry.Entity.CreatedBy = userId;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                // preserve original Created*
+                entry.Property(nameof(IAuditable.CreatedAtUtc)).IsModified = false;
+                entry.Property(nameof(IAuditable.CreatedBy)).IsModified    = false;
 
-                    entry.Entity.ModifiedAtUtc = now;
-                    // entry.Entity.ModifiedBy = currentUserId; // wire later via ICurrentUser
-                    break;
+                entry.Entity.ModifiedAtUtc = now;
+                if (userId.HasValue) entry.Entity.ModifiedBy = userId;
             }
         }
     }

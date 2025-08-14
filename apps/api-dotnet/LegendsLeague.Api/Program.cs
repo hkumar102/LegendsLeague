@@ -1,9 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+using LegendsLeague.Infrastructure.Persistence.Fixtures;
+using LegendsLeague.Api.Security;
 using LegendsLeague.Application;
 using LegendsLeague.Infrastructure.Persistence;
-using LegendsLeague.Infrastructure.Persistence.Fixtures;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using LegendsLeague.Application.Abstractions.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,20 +17,14 @@ builder.Host.UseSerilog((ctx, cfg) =>
        .WriteTo.Console();
 });
 
-// Register FixturesDbContext
-builder.Services.AddDbContext<FixturesDbContext>(options =>
-options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-    npgsqlOptions =>
-    {
-        npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "fixtures");
-    }));
-    
 // Register Infrastructure persistence
 builder.Services.AddPersistence(builder.Configuration);
 
 // Services
 builder.Services.AddApplicationServices();
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor(); // exposes HttpContext for CurrentUserAccessor
+builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>(); // resolves current user id for auditing
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -66,5 +62,12 @@ app.MapControllers();
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }))
    .WithName("Health")
    .WithTags("System");
+
+// Apply pending EF Core migrations for Fixtures at startup (dev-friendly)
+using (var scope = app.Services.CreateScope())
+{
+    var fixturesDb = scope.ServiceProvider.GetRequiredService<FixturesDbContext>();
+    await fixturesDb.Database.MigrateAsync();
+}
 
 app.Run();

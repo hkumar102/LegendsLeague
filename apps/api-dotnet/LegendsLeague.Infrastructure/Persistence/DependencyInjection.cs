@@ -6,18 +6,21 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace LegendsLeague.Infrastructure.Persistence;
 
+/// <summary>
+/// Registers persistence services and DbContexts for the application.
+/// Uses a single Postgres connection string for all module DbContexts.
+/// </summary>
 public static class DependencyInjection
 {
     /// <summary>
-    /// Registers Infrastructure persistence (DbContexts) using ONE Postgres connection string.
-    /// Also adds SaveChanges interceptors for auditing and soft-delete.
+    /// Adds all persistence services (DbContexts + EF Core interceptors).
     /// </summary>
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration config)
     {
-        var cs = config.GetConnectionString("postgres")
-                 ?? "Host=localhost;Port=5432;Database=legends_league;Username=postgres;Password=postgres";
+        var cs = config.GetConnectionString("DefaultConnection")
+                 ?? "Host=localhost;Port=5432;Database=legends_league;Username=legends_app;Password=change_me_strong_pw";
 
-        // Interceptors as scoped services (so they can depend on ICurrentUser later)
+        // Interceptors as scoped services (depend on ICurrentUser)
         services.AddScoped<AuditingSaveChangesInterceptor>();
         services.AddScoped<SoftDeleteSaveChangesInterceptor>();
 
@@ -30,7 +33,7 @@ public static class DependencyInjection
             });
             opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
-            // Attach interceptors
+            // Hook SaveChanges interceptors
             opt.AddInterceptors(
                 sp.GetRequiredService<AuditingSaveChangesInterceptor>(),
                 sp.GetRequiredService<SoftDeleteSaveChangesInterceptor>());

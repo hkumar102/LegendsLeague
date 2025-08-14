@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LegendsLeague.Domain\LegendsLeague.Domain.csproj" />
+    <ProjectReference Include="..\LegendsLeague.Application\LegendsLeague.Application.csproj" />
   </ItemGroup>
 
 </Project>
