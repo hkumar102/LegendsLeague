@@ -1,4 +1,7 @@
 using LegendsLeague.Application;
+using LegendsLeague.Infrastructure.Persistence;
+using LegendsLeague.Infrastructure.Persistence.Fixtures;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
@@ -11,6 +14,17 @@ builder.Host.UseSerilog((ctx, cfg) =>
        .Enrich.FromLogContext()
        .WriteTo.Console();
 });
+
+// Register FixturesDbContext
+builder.Services.AddDbContext<FixturesDbContext>(options =>
+options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    npgsqlOptions =>
+    {
+        npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "fixtures");
+    }));
+    
+// Register Infrastructure persistence
+builder.Services.AddPersistence(builder.Configuration);
 
 // Services
 builder.Services.AddApplicationServices();
