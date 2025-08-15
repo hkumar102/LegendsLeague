@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using LegendsLeague.Application.Abstractions.Persistence;
+using LegendsLeague.Infrastructure.Persistence.Fantasy;
 
 namespace LegendsLeague.Infrastructure.Persistence;
 
@@ -25,23 +26,34 @@ public static class DependencyInjection
         services.AddScoped<AuditingSaveChangesInterceptor>();
         services.AddScoped<SoftDeleteSaveChangesInterceptor>();
 
-        // Fixtures module DbContext (schema: fixtures)
-        services.AddDbContext<FixturesDbContext>((sp, opt) =>
+        // Fixtures DbContext (existing)
+        services.AddDbContext<Fixtures.FixturesDbContext>((sp, opt) =>
         {
             opt.UseNpgsql(cs, npg =>
             {
                 npg.MigrationsHistoryTable("__efmigrations_history", "fixtures");
             });
             opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            opt.AddInterceptors(
+                sp.GetRequiredService<AuditingSaveChangesInterceptor>(),
+                sp.GetRequiredService<SoftDeleteSaveChangesInterceptor>());
+        });
+        services.AddScoped<IFixturesDbContext>(sp =>
+            sp.GetRequiredService<FixturesDbContext>());
 
-            // Hook SaveChanges interceptors
+        // Fantasy DbContext (NEW)
+        services.AddDbContext<FantasyDbContext>((sp, opt) =>
+        {
+            opt.UseNpgsql(cs, npg =>
+            {
+                npg.MigrationsHistoryTable("__efmigrations_history", "fantasy");
+            });
+            opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             opt.AddInterceptors(
                 sp.GetRequiredService<AuditingSaveChangesInterceptor>(),
                 sp.GetRequiredService<SoftDeleteSaveChangesInterceptor>());
         });
 
-            services.AddScoped<IFixturesDbContext>(sp => sp.GetRequiredService<FixturesDbContext>());
-
-    return services;
+        return services;
     }
 }
