@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using LegendsLeague.Contracts.Common;
 using LegendsLeague.Contracts.Series;
 using LegendsLeague.Tests.Integration.Support;
 using Xunit;
@@ -8,7 +9,8 @@ using Xunit;
 namespace LegendsLeague.Tests.Integration.Api;
 
 /// <summary>
-/// Integration tests that boot the API and hit real endpoints (Swagger + Series).
+/// Integration tests that boot the API and hit real endpoints (Swagger + Series),
+/// updated to assert the PaginatedResult envelope.
 /// </summary>
 public class SwaggerAndSeriesEndpointsTests : IClassFixture<TestWebAppFactory>
 {
@@ -34,15 +36,16 @@ public class SwaggerAndSeriesEndpointsTests : IClassFixture<TestWebAppFactory>
     }
 
     [Fact]
-    public async Task GetSeries_returns_seeded_rows()
+    public async Task GetSeries_returns_paginated_rows()
     {
         var resp = await _client.GetAsync("/api/v1/series");
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var rows = await resp.Content.ReadFromJsonAsync<IReadOnlyList<SeriesDto>>();
-        rows.Should().NotBeNull();
-        rows!.Should().NotBeEmpty();
-        rows!.Select(x => x.Name).Should().Contain("Indian Premier League");
+        var page = await resp.Content.ReadFromJsonAsync<PaginatedResult<SeriesDto>>();
+        page.Should().NotBeNull();
+        page!.Items.Should().NotBeEmpty();
+        page.TotalCount.Should().BeGreaterThan(0);
+        page.Items.Select(x => x.Name).Should().Contain("Indian Premier League");
     }
 
     [Fact]
@@ -50,9 +53,12 @@ public class SwaggerAndSeriesEndpointsTests : IClassFixture<TestWebAppFactory>
     {
         var resp = await _client.GetAsync("/api/v1/series?seasonYear=2026");
         resp.EnsureSuccessStatusCode();
-        var rows = await resp.Content.ReadFromJsonAsync<IReadOnlyList<SeriesDto>>();
-        rows.Should().NotBeNull();
-        rows!.Should().OnlyContain(s => s.SeasonYear == 2026);
+
+        var page = await resp.Content.ReadFromJsonAsync<PaginatedResult<SeriesDto>>();
+        page.Should().NotBeNull();
+        page!.Items.Should().OnlyContain(s => s.SeasonYear == 2026);
+        page.TotalCount.Should().BeGreaterThan(0);
+        page.TotalPages.Should().BeGreaterThan(0);
     }
 
     [Fact]

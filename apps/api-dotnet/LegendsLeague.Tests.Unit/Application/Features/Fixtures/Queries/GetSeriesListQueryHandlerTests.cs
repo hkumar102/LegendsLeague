@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LegendsLeague.Application.Abstractions.Persistence;
 using LegendsLeague.Application.Features.Fixtures.Queries;
+using LegendsLeague.Contracts.Common;
 using LegendsLeague.Tests.Unit.Testing.Fakes;
 using LegendsLeague.Tests.Unit.Testing.Seeding;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace LegendsLeague.Tests.Unit.Application.Features.Fixtures.Queries;
 
 /// <summary>
-/// Unit tests for <see cref="GetSeriesListQueryHandler"/> covering paging, sorting, and year filter.
-/// NOTE: We do not test Postgres-specific ILIKE here; EF InMemory doesn't translate it.
+/// Unit tests for <see cref="GetSeriesListQueryHandler"/> covering paging, sorting, and year filter,
+/// updated to assert the PaginatedResult envelope.
 /// </summary>
 public class GetSeriesListQueryHandlerTests
 {
@@ -20,12 +21,16 @@ public class GetSeriesListQueryHandlerTests
         await SeedAsync(ctx);
 
         var handler = new GetSeriesListQueryHandler(ctx);
-        var result = await handler.Handle(new GetSeriesListQuery(), default);
+        PaginatedResult<LegendsLeague.Contracts.Series.SeriesDto> result =
+            await handler.Handle(new GetSeriesListQuery(), default);
 
         result.Should().NotBeNull();
-        result.Should().HaveCount(5);
-        // Default sort: SeasonYear asc then Name asc (as implemented)
-        result.Select(x => x.SeasonYear).Should().BeInAscendingOrder();
+        result.Items.Should().HaveCount(5);
+        result.TotalCount.Should().Be(5);
+        result.Page.Should().Be(1);
+        result.PageSize.Should().Be(20);
+        // Default sort: SeasonYear asc then Name
+        result.Items.Select(x => x.SeasonYear).Should().BeInAscendingOrder();
     }
 
     [Fact]
@@ -37,8 +42,11 @@ public class GetSeriesListQueryHandlerTests
         var handler = new GetSeriesListQueryHandler(ctx);
         var result = await handler.Handle(new GetSeriesListQuery(SeasonYear: 2026, Page: 1, PageSize: 2), default);
 
-        result.Should().HaveCount(2);
-        result.All(x => x.SeasonYear == 2026).Should().BeTrue();
+        result.Items.Should().HaveCount(2);
+        result.TotalCount.Should().Be(3); // from seed: 3 rows where SeasonYear=2026
+        result.Items.All(x => x.SeasonYear == 2026).Should().BeTrue();
+        result.TotalPages.Should().Be(2);
+        result.HasNext.Should().BeTrue();
     }
 
     [Fact]
@@ -50,8 +58,9 @@ public class GetSeriesListQueryHandlerTests
         var handler = new GetSeriesListQueryHandler(ctx);
         var result = await handler.Handle(new GetSeriesListQuery(Sort: "-name"), default);
 
-        result.Should().HaveCount(5);
-        result.Select(x => x.Name).Should().BeInDescendingOrder();
+        result.Items.Should().HaveCount(5);
+        result.Items.Select(x => x.Name).Should().BeInDescendingOrder();
+        result.TotalCount.Should().Be(5);
     }
 
     private static async Task SeedAsync(IFixturesDbContext db)

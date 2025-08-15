@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using LegendsLeague.Application.Features.Fixtures.Queries;
 using LegendsLeague.Contracts.Series;
+using LegendsLeague.Contracts.Common;
 using LegendsLeague.Application.Features.Fixtures.Commands.CreateSeries;
 using LegendsLeague.Application.Features.Fixtures.Commands.UpdateSeries;
 using LegendsLeague.Application.Features.Fixtures.Commands.DeleteSeries;
@@ -24,9 +25,9 @@ namespace LegendsLeague.Api.Controllers.Fixtures
 
         /// <summary>Lists series with optional filtering, sorting, and pagination.</summary>
         [HttpGet]
-        [ProducesResponseType(typeof(IReadOnlyList<SeriesDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedResult<SeriesDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IReadOnlyList<SeriesDto>>> GetSeries(
+        public async Task<ActionResult<PaginatedResult<SeriesDto>>> GetSeries(
             [FromQuery] int? seasonYear,
             [FromQuery] string? search,
             [FromQuery] int page = 1,

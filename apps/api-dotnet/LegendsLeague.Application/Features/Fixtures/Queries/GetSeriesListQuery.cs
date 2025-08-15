@@ -1,4 +1,6 @@
 using LegendsLeague.Application.Abstractions.Persistence;
+using LegendsLeague.Application.Common.Extensions;
+using LegendsLeague.Contracts.Common;
 using LegendsLeague.Contracts.Series;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -22,23 +24,18 @@ public sealed record GetSeriesListQuery(
     int Page = 1,
     int PageSize = 20,
     string? Sort = null
-) : IRequest<IReadOnlyList<SeriesDto>>;
+) : IRequest<PaginatedResult<SeriesDto>>;
 
 /// <summary>
 /// Handles <see cref="GetSeriesListQuery"/> using the <see cref="IFixturesDbContext"/> read surface.
 /// </summary>
-public sealed class GetSeriesListQueryHandler : IRequestHandler<GetSeriesListQuery, IReadOnlyList<SeriesDto>>
+public sealed class GetSeriesListQueryHandler : IRequestHandler<GetSeriesListQuery, PaginatedResult<SeriesDto>>
 {
     private readonly IFixturesDbContext _db;
 
-    /// <summary>
-    /// Initializes a new instance of the handler.
-    /// </summary>
-    /// <param name="db">Fixtures read/write abstraction.</param>
     public GetSeriesListQueryHandler(IFixturesDbContext db) => _db = db;
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<SeriesDto>> Handle(GetSeriesListQuery request, CancellationToken ct)
+    public async Task<PaginatedResult<SeriesDto>> Handle(GetSeriesListQuery request, CancellationToken ct)
     {
         IQueryable<LegendsLeague.Domain.Entities.Fixtures.Series> q = _db.Series.AsNoTracking();
 
@@ -63,15 +60,12 @@ public sealed class GetSeriesListQueryHandler : IRequestHandler<GetSeriesListQue
             _               => q.OrderBy(s => s.SeasonYear).ThenBy(s => s.Name)
         };
 
-        // Paging (Page is 1-based)
-        var skip = Math.Max(0, (request.Page - 1) * request.PageSize);
-        q = q.Skip(skip).Take(request.PageSize);
-
-        // Projection to contracts
-        var rows = await q
-            .Select(s => new SeriesDto(s.Id, s.Name, s.SeasonYear))
-            .ToListAsync(ct);
-
-        return rows;
+        // Use pagination helper with projection
+        return await q.ToPaginatedResultAsync(
+            request.Page,
+            request.PageSize,
+            s => new SeriesDto(s.Id, s.Name, s.SeasonYear),
+            request.Sort,
+            ct);
     }
 }
