@@ -1,0 +1,1 @@
+namespace LegendsLeague.Contracts.Fantasy; public sealed class FantasyLeagueUpdateRequest { public string? Name { get; init; } public int? MaxTeams { get; init; } }

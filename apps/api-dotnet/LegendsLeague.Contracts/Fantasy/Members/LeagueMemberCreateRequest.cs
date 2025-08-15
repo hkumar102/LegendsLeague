@@ -1,0 +1,1 @@
+namespace LegendsLeague.Contracts.Fantasy; public sealed class LeagueMemberCreateRequest { public Guid LeagueId { get; init; } public Guid UserId { get; init; } public LeagueMemberRole Role { get; init; } = LeagueMemberRole.Member; }

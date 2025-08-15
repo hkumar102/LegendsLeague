@@ -1,0 +1,1 @@
+namespace LegendsLeague.Contracts.Fantasy; public sealed class LeagueMemberUpdateRequest { public LeagueMemberRole? Role { get; init; } }

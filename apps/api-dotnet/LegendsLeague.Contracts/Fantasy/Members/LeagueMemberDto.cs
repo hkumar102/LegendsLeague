@@ -1,0 +1,1 @@
+namespace LegendsLeague.Contracts.Fantasy; public sealed record LeagueMemberDto(Guid Id, Guid LeagueId, Guid UserId, LeagueMemberRole Role, DateTimeOffset JoinedAtUtc);

@@ -1,0 +1,1 @@
+namespace LegendsLeague.Contracts.Fantasy; public sealed class LeagueTeamUpdateRequest { public string? Name { get; init; } public int? DraftPosition { get; init; } }

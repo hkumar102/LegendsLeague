@@ -1,0 +1,1 @@
+namespace LegendsLeague.Contracts.Fantasy; public sealed record LeagueTeamDto(Guid Id, Guid LeagueId, string Name, Guid OwnerUserId, int? DraftPosition);

@@ -1,0 +1,1 @@
+namespace LegendsLeague.Contracts.Fantasy; public sealed record FantasyLeagueDto(Guid Id, Guid SeriesId, string Name, int MaxTeams, Guid CommissionerUserId);

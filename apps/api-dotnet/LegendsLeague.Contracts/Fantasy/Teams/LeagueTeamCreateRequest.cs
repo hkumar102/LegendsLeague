@@ -1,0 +1,1 @@
+namespace LegendsLeague.Contracts.Fantasy; public sealed class LeagueTeamCreateRequest { public Guid LeagueId { get; init; } public string Name { get; init; } = string.Empty; public Guid OwnerUserId { get; init; } public int? DraftPosition { get; init; } }
