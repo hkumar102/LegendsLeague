@@ -3,6 +3,7 @@ using System;
 using LegendsLeague.Infrastructure.Persistence.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LegendsLeague.Infrastructure.Persistence.Fixtures.Migrations
 {
     [DbContext(typeof(FixturesDbContext))]
-    partial class FixturesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250815164014_Fixtures_AddPlayers")]
+    partial class Fixtures_AddPlayers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
