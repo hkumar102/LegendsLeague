@@ -101,7 +101,7 @@ Love that order — it mirrors the natural dependency flow (Domain → Contracts
 
 4.2 Abstractions
 	•	✅ Abstractions/Persistence/IFixturesDbContext.cs (DbSet, DbSet, DbSet)
-	•	⬜ add DbSet<Player> once Player entity exists
+	•	✅ add DbSet<Player> once Player entity exists
 	•	✅ Abstractions/Security/ICurrentUser.cs
 
 4.3 Pagination helpers
