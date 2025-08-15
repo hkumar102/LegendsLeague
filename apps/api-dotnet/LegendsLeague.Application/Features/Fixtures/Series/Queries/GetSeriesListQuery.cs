@@ -1,4 +1,7 @@
+using AutoMapper;
 using LegendsLeague.Application.Abstractions.Persistence;
+using LegendsLeague.Application.Common.Extensions;
+using LegendsLeague.Contracts.Common;
 using LegendsLeague.Contracts.Series;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,15 +22,23 @@ public sealed record GetSeriesListQuery(
     int Page = 1,
     int PageSize = 20,
     string? Sort = null
-) : IRequest<IReadOnlyList<SeriesDto>>;
+) : IRequest<PaginatedResult<SeriesDto>>;
 
-public sealed class GetSeriesListQueryHandler : IRequestHandler<GetSeriesListQuery, IReadOnlyList<SeriesDto>>
+/// <summary>
+/// Handles <see cref="GetSeriesListQuery"/> and returns a paginated result.
+/// </summary>
+public sealed class GetSeriesListQueryHandler : IRequestHandler<GetSeriesListQuery, PaginatedResult<SeriesDto>>
 {
     private readonly IFixturesDbContext _db;
+    private readonly IMapper _mapper;
 
-    public GetSeriesListQueryHandler(IFixturesDbContext db) => _db = db;
+    public GetSeriesListQueryHandler(IFixturesDbContext db, IMapper mapper)
+    {
+        _db = db;
+        _mapper = mapper;
+    }
 
-    public async Task<IReadOnlyList<SeriesDto>> Handle(GetSeriesListQuery request, CancellationToken ct)
+    public async Task<PaginatedResult<SeriesDto>> Handle(GetSeriesListQuery request, CancellationToken ct)
     {
         IQueryable<LegendsLeague.Domain.Entities.Fixtures.Series> q = _db.Series.AsNoTracking();
 
@@ -36,10 +47,11 @@ public sealed class GetSeriesListQueryHandler : IRequestHandler<GetSeriesListQue
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
-            var term = request.Search.Trim().ToLower();
+            var term = request.Search.Trim();
             q = q.Where(s => EF.Functions.ILike(s.Name, $"%{term}%"));
         }
 
+        // Sorting
         q = request.Sort?.Trim() switch
         {
             "name"        => q.OrderBy(s => s.Name).ThenBy(s => s.SeasonYear),
@@ -49,11 +61,7 @@ public sealed class GetSeriesListQueryHandler : IRequestHandler<GetSeriesListQue
             _             => q.OrderBy(s => s.SeasonYear).ThenBy(s => s.Name)
         };
 
-        var skip = Math.Max(0, (request.Page - 1) * request.PageSize);
-        q = q.Skip(skip).Take(request.PageSize);
-
-        return await q
-            .Select(s => new SeriesDto(s.Id, s.Name, s.SeasonYear))
-            .ToListAsync(ct);
+        // Project then paginate
+        return await q.ToPaginatedResultAsync<Domain.Entities.Fixtures.Series, SeriesDto>(request.Page, request.PageSize, _mapper.ConfigurationProvider, ct: ct);
     }
 }

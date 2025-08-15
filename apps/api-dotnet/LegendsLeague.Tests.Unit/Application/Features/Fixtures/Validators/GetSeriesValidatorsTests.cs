@@ -1,7 +1,7 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
-using LegendsLeague.Application.Features.Fixtures.Queries;
-using LegendsLeague.Application.Features.Fixtures.Queries.Validators;
+using LegendsLeague.Application.Features.Fixtures.Series.Queries;
+using LegendsLeague.Application.Features.Fixtures.Series.Queries.Validators;
 
 namespace LegendsLeague.Tests.Unit.Application.Features.Fixtures.Validators;
 

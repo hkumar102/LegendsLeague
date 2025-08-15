@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LegendsLeague.Application.Abstractions.Persistence;
-using LegendsLeague.Application.Features.Fixtures.Queries;
+using LegendsLeague.Application.Features.Fixtures.Series.Queries;
 using LegendsLeague.Contracts.Common;
 using LegendsLeague.Tests.Unit.Testing.Fakes;
 using LegendsLeague.Tests.Unit.Testing.Seeding;

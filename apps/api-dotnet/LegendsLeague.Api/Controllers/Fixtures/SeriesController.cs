@@ -1,20 +1,14 @@
 using System.Net.Mime;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using LegendsLeague.Application.Features.Fixtures.Series.Queries;
 using LegendsLeague.Contracts.Series;
 using LegendsLeague.Contracts.Common;
-
-// Teams (series-scoped)
-using LegendsLeague.Contracts.Teams;
-using LegendsLeague.Application.Common.Exceptions;
-using LegendsLeague.Application.Features.Fixtures.Teams.Queries;
-using LegendsLeague.Application.Features.Fixtures.Teams.Commands.CreateTeam;
+using LegendsLeague.Application.Features.Fixtures.Series.Queries;
 
 namespace LegendsLeague.Api.Controllers.Fixtures
 {
     /// <summary>
-    /// Read endpoints for real-world cricket series (e.g., IPL seasons) and series-scoped resources.
+    /// Read endpoints for real-world cricket series (e.g., IPL seasons).
     /// </summary>
     [ApiController]
     [Route("api/v1/series")]
@@ -26,16 +20,25 @@ namespace LegendsLeague.Api.Controllers.Fixtures
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesController"/>.
         /// </summary>
-        /// <param name="sender">MediatR sender used to dispatch queries/commands to the Application layer.</param>
+        /// <param name="sender">MediatR sender used to dispatch queries to the Application layer.</param>
         public SeriesController(ISender sender) => _sender = sender;
 
         /// <summary>
         /// Lists series with optional filtering, sorting, and pagination.
         /// </summary>
+        /// <param name="seasonYear">Optional exact season year (e.g., 2026).</param>
+        /// <param name="search">Optional case-insensitive substring match on the series name.</param>
+        /// <param name="page">1-based page number (default 1).</param>
+        /// <param name="pageSize">Page size (default 20, max 100).</param>
+        /// <param name="sort">Sort key: name, -name, seasonYear, -seasonYear (default seasonYear asc, then name).</param>
+        /// <param name="ct">Cancellation token for the request.</param>
+        /// <returns>A paginated list of matching series.</returns>
+        /// <response code="200">Returns the paginated list of series.</response>
+        /// <response code="400">Validation errors for query parameters.</response>
         [HttpGet]
-        [ProducesResponseType(typeof(IReadOnlyList<SeriesDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedResult<SeriesDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IReadOnlyList<SeriesDto>>> GetSeries(
+        public async Task<ActionResult<PaginatedResult<SeriesDto>>> GetSeries(
             [FromQuery] int? seasonYear,
             [FromQuery] string? search,
             [FromQuery] int page = 1,
@@ -57,6 +60,11 @@ namespace LegendsLeague.Api.Controllers.Fixtures
         /// <summary>
         /// Gets details for a single series by its identifier.
         /// </summary>
+        /// <param name="id">Series identifier.</param>
+        /// <param name="ct">Cancellation token for the request.</param>
+        /// <returns>The series if found; otherwise 404.</returns>
+        /// <response code="200">Returns the series.</response>
+        /// <response code="404">Series not found.</response>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(SeriesDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -65,60 +73,6 @@ namespace LegendsLeague.Api.Controllers.Fixtures
             var dto = await _sender.Send(new GetSeriesByIdQuery(id), ct);
             if (dto is null) return NotFound();
             return Ok(dto);
-        }
-
-        // ---------------------------
-        // SERIES-SCOPED TEAMS
-        // ---------------------------
-
-        /// <summary>
-        /// Lists teams in a series with optional search, sort and pagination.
-        /// </summary>
-        [HttpGet("{seriesId:guid}/teams")]
-        [ProducesResponseType(typeof(PaginatedResult<RealTeamDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PaginatedResult<RealTeamDto>>> GetTeamsBySeries(
-            [FromRoute] Guid seriesId,
-            [FromQuery] string? search,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] string? sort = null,
-            CancellationToken ct = default)
-        {
-            var result = await _sender.Send(new GetTeamsBySeriesQuery(seriesId, search, page, pageSize, sort), ct);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Creates a new team inside a series.
-        /// </summary>
-        [HttpPost("{seriesId:guid}/teams")]
-        [ProducesResponseType(typeof(RealTeamDto), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<RealTeamDto>> CreateTeamInSeries(
-            [FromRoute] Guid seriesId,
-            [FromBody] TeamCreateRequest body,
-            CancellationToken ct = default)
-        {
-            try
-            {
-                var dto = await _sender.Send(new CreateTeamCommand(seriesId, body.Name, body.ShortName), ct);
-                // Location can point to the team resource itself
-                return CreatedAtAction(
-                    actionName: nameof(LegendsLeague.Api.Controllers.Fixtures.TeamsController.GetById),
-                    routeValues: new { id = dto.Id },
-                    value: dto);
-            }
-            catch (NotFoundException)
-            {
-                return NotFound();
-            }
-            catch (ConflictException ex)
-            {
-                return Conflict(new { error = ex.Message });
-            }
         }
     }
 }
