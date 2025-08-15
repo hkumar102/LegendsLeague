@@ -4,7 +4,7 @@ using LegendsLeague.Contracts.Series;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace LegendsLeague.Application.Features.Fixtures.Commands.UpdateSeries;
+namespace LegendsLeague.Application.Features.Fixtures.Series.Commands.UpdateSeries;
 
 /// <summary>
 /// Command to update an existing series (e.g., rename or change season year).

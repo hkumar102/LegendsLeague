@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace LegendsLeague.Application.Features.Fixtures.Commands.UpdateSeries.Validators;
+namespace LegendsLeague.Application.Features.Fixtures.Series.Commands.UpdateSeries.Validators;
 
 /// <summary>
 /// Validation rules for updating a series.

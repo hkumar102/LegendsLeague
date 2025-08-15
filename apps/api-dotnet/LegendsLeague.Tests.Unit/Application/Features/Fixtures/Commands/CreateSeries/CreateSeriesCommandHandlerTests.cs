@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LegendsLeague.Application.Common.Exceptions;
-using LegendsLeague.Application.Features.Fixtures.Commands.CreateSeries;
+using LegendsLeague.Application.Features.Fixtures.Series.Commands.CreateSeries;
 using LegendsLeague.Domain.Entities.Fixtures;
 using LegendsLeague.Tests.Unit.Testing.Fakes;
 using Microsoft.EntityFrameworkCore;

@@ -5,7 +5,7 @@ using FixtureEntities = LegendsLeague.Domain.Entities.Fixtures;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace LegendsLeague.Application.Features.Fixtures.Commands.CreateSeries;
+namespace LegendsLeague.Application.Features.Fixtures.Series.Commands.CreateSeries;
 
 /// <summary>
 /// Command to create a new cricket series/season (e.g., IPL 2026).

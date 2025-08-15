@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace LegendsLeague.Application.Features.Fixtures.Commands.DeleteSeries.Validators;
+namespace LegendsLeague.Application.Features.Fixtures.Series.Commands.DeleteSeries.Validators;
 
 /// <summary>
 /// Validation rules for deleting a series.

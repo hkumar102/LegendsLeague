@@ -3,7 +3,7 @@ using LegendsLeague.Application.Common.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace LegendsLeague.Application.Features.Fixtures.Commands.DeleteSeries;
+namespace LegendsLeague.Application.Features.Fixtures.Series.Commands.DeleteSeries;
 
 /// <summary>
 /// Command to delete a series.

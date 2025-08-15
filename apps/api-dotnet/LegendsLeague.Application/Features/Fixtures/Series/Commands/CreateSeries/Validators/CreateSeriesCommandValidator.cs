@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace LegendsLeague.Application.Features.Fixtures.Commands.CreateSeries.Validators;
+namespace LegendsLeague.Application.Features.Fixtures.Series.Commands.CreateSeries.Validators;
 
 /// <summary>
 /// Validation rules for <see cref="CreateSeriesCommand"/>.

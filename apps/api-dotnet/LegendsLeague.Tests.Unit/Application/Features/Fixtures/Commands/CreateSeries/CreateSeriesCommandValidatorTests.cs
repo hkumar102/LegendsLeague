@@ -1,7 +1,7 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
-using LegendsLeague.Application.Features.Fixtures.Commands.CreateSeries;
-using LegendsLeague.Application.Features.Fixtures.Commands.CreateSeries.Validators;
+using LegendsLeague.Application.Features.Fixtures.Series.Commands.CreateSeries;
+using LegendsLeague.Application.Features.Fixtures.Series.Commands.CreateSeries.Validators;
 
 namespace LegendsLeague.Tests.Unit.Application.Features.Fixtures.Commands.CreateSeries;
 
