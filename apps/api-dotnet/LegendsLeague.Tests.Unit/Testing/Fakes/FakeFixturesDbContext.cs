@@ -16,6 +16,8 @@ public sealed class FakeFixturesDbContext : DbContext, IFixturesDbContext
     public DbSet<RealTeam> RealTeams => Set<RealTeam>();
     /// <summary>Fixtures (matches) set.</summary>
     public DbSet<Fixture> Fixtures => Set<Fixture>();
+    /// <summary>Players set.</summary>
+    public DbSet<Player> Players => Set<Player>();
 
     /// <summary>
     /// Creates a new in-memory context instance with an optional unique database name.

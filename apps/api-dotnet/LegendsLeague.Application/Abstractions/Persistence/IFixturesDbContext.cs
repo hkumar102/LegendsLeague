@@ -25,6 +25,11 @@ public interface IFixturesDbContext
     DbSet<Fixture> Fixtures { get; }
 
     /// <summary>
+    /// Real-world players assigned to teams within a series.
+    /// </summary>
+    DbSet<Player> Players { get; }
+
+    /// <summary>
     /// Persists pending changes to the database.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
