@@ -1,7 +1,7 @@
 using System.Net.Mime;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using LegendsLeague.Application.Features.Fixtures.Queries;
+using LegendsLeague.Application.Features.Fixtures.Series.Queries;
 using LegendsLeague.Contracts.Series;
 using LegendsLeague.Contracts.Common;
 
