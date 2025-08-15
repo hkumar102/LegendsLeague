@@ -23,7 +23,7 @@ Love that order — it mirrors the natural dependency flow (Domain → Contracts
 	•	✅ Entities/Fixtures/Series.cs
 	•	✅ Entities/Fixtures/RealTeam.cs
 	•	✅ Entities/Fixtures/Fixture.cs
-	•	⬜ Entities/Fixtures/Player.cs (NEW — to add)
+	•	✅ Entities/Fixtures/Player.cs (NEW — to add)
 	•	Props: Id, SeriesId, RealTeamId, FullName, ShortName?, Country?, Role, Batting, Bowling
 	•	Navs: Series, RealTeam
 	•	Inherit: AuditableEntity (no soft delete unless you want it)
@@ -34,8 +34,8 @@ Love that order — it mirrors the natural dependency flow (Domain → Contracts
 
 2.1 Series
 	•	✅ Series/SeriesDto.cs
-	•	⬜ Series/SeriesCreateRequest.cs
-	•	⬜ Series/SeriesUpdateRequest.cs
+	•	✅ Series/SeriesCreateRequest.cs
+	•	✅ Series/SeriesUpdateRequest.cs
 
 2.2 Teams
 	•	✅ Teams/RealTeamDto.cs
