@@ -1,3 +1,4 @@
+using AutoMapper;
 using LegendsLeague.Application.Abstractions.Persistence;
 using LegendsLeague.Application.Common.Extensions;
 using LegendsLeague.Contracts.Common;
@@ -10,11 +11,6 @@ namespace LegendsLeague.Application.Features.Fixtures.Teams.Queries;
 /// <summary>
 /// Query to retrieve a paged, filtered, and sorted list of real teams within a specific series.
 /// </summary>
-/// <param name="SeriesId">Required series identifier.</param>
-/// <param name="Search">Optional case-insensitive substring to match against team name or short name.</param>
-/// <param name="Page">1-based page number (default 1).</param>
-/// <param name="PageSize">Page size (default 20; max validated by <see cref="Validators.GetTeamsBySeriesQueryValidator"/>).</param>
-/// <param name="Sort">Sort key: <c>name</c>, <c>-name</c>, <c>shortName</c>, <c>-shortName</c> (default: <c>name</c> asc).</param>
 public sealed record GetTeamsBySeriesQuery(
     Guid SeriesId,
     string? Search = null,
@@ -23,29 +19,22 @@ public sealed record GetTeamsBySeriesQuery(
     string? Sort = null
 ) : IRequest<PaginatedResult<RealTeamDto>>;
 
-/// <summary>
-/// Handles <see cref="GetTeamsBySeriesQuery"/> using the fixtures read surface.
-/// </summary>
 public sealed class GetTeamsBySeriesQueryHandler
     : IRequestHandler<GetTeamsBySeriesQuery, PaginatedResult<RealTeamDto>>
 {
     private readonly IFixturesDbContext _db;
+    private readonly IMapper _mapper;
 
-    /// <summary>
-    /// Initializes a new handler instance.
-    /// </summary>
-    /// <param name="db">Fixtures persistence abstraction.</param>
-    public GetTeamsBySeriesQueryHandler(IFixturesDbContext db) => _db = db;
+    public GetTeamsBySeriesQueryHandler(IFixturesDbContext db, IMapper mapper)
+    {
+        _db = db;
+        _mapper = mapper;
+    }
 
-    /// <inheritdoc />
     public async Task<PaginatedResult<RealTeamDto>> Handle(GetTeamsBySeriesQuery request, CancellationToken ct)
     {
-        // Base filter: teams for the given series (soft-deleted rows are excluded by the global filter).
-        var q = _db.RealTeams
-            .AsNoTracking()
-            .Where(t => t.SeriesId == request.SeriesId);
+        var q = _db.RealTeams.AsNoTracking().Where(t => t.SeriesId == request.SeriesId);
 
-        // Optional search (Postgres ILIKE via Npgsql, falls back appropriately in tests with InMemory)
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var term = request.Search.Trim().ToLower();
@@ -54,7 +43,6 @@ public sealed class GetTeamsBySeriesQueryHandler
                 (t.ShortName != null && EF.Functions.ILike(t.ShortName, $"%{term}%")));
         }
 
-        // Sorting
         q = request.Sort?.Trim() switch
         {
             "name"        => q.OrderBy(t => t.Name),
@@ -64,12 +52,11 @@ public sealed class GetTeamsBySeriesQueryHandler
             _             => q.OrderBy(t => t.Name)
         };
 
-        // Page and project → DTO inside a PaginatedResult envelope
-        return await q.ToPaginatedResultAsync(
-            page: request.Page,
-            pageSize: request.PageSize,
-            selector: t => new RealTeamDto(t.Id, t.SeriesId, t.Name, t.ShortName),
-            sort: request.Sort,
-            ct: ct);
+        return await q.ToPaginatedResultAsync<LegendsLeague.Domain.Entities.Fixtures.RealTeam, RealTeamDto>(
+            request.Page,
+            request.PageSize,
+            _mapper.ConfigurationProvider,
+            request.Sort,
+            ct);
     }
 }

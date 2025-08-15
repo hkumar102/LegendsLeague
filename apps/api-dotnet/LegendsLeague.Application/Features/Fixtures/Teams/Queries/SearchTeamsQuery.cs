@@ -1,3 +1,4 @@
+using AutoMapper;
 using LegendsLeague.Application.Abstractions.Persistence;
 using LegendsLeague.Application.Common.Extensions;
 using LegendsLeague.Contracts.Common;
@@ -10,11 +11,6 @@ namespace LegendsLeague.Application.Features.Fixtures.Teams.Queries;
 /// <summary>
 /// Global search for real teams, optionally restricted to a series.
 /// </summary>
-/// <param name="SeriesId">Optional series filter; when provided, limits to that series.</param>
-/// <param name="Search">Optional case-insensitive substring matched against name or short name.</param>
-/// <param name="Page">1-based page number (default 1).</param>
-/// <param name="PageSize">Page size (default 20; max validated by validator).</param>
-/// <param name="Sort">Sort key: name, -name, shortName, -shortName (default name asc).</param>
 public sealed record SearchTeamsQuery(
     Guid? SeriesId = null,
     string? Search = null,
@@ -23,25 +19,23 @@ public sealed record SearchTeamsQuery(
     string? Sort = null
 ) : IRequest<PaginatedResult<RealTeamDto>>;
 
-/// <summary>
-/// Handles <see cref="SearchTeamsQuery"/> using the fixtures read surface.
-/// </summary>
 public sealed class SearchTeamsQueryHandler : IRequestHandler<SearchTeamsQuery, PaginatedResult<RealTeamDto>>
 {
     private readonly IFixturesDbContext _db;
+    private readonly IMapper _mapper;
 
-    /// <summary>Initializes handler.</summary>
-    public SearchTeamsQueryHandler(IFixturesDbContext db) => _db = db;
+    public SearchTeamsQueryHandler(IFixturesDbContext db, IMapper mapper)
+    {
+        _db = db;
+        _mapper = mapper;
+    }
 
-    /// <inheritdoc />
     public async Task<PaginatedResult<RealTeamDto>> Handle(SearchTeamsQuery request, CancellationToken ct)
     {
         var q = _db.RealTeams.AsNoTracking().AsQueryable();
 
         if (request.SeriesId.HasValue)
-        {
             q = q.Where(t => t.SeriesId == request.SeriesId.Value);
-        }
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
@@ -60,10 +54,10 @@ public sealed class SearchTeamsQueryHandler : IRequestHandler<SearchTeamsQuery, 
             _             => q.OrderBy(t => t.Name)
         };
 
-        return await q.ToPaginatedResultAsync(
+        return await q.ToPaginatedResultAsync<LegendsLeague.Domain.Entities.Fixtures.RealTeam, RealTeamDto>(
             request.Page,
             request.PageSize,
-            t => new RealTeamDto(t.Id, t.SeriesId, t.Name, t.ShortName),
+            _mapper.ConfigurationProvider,
             request.Sort,
             ct);
     }

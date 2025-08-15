@@ -4,13 +4,14 @@ using LegendsLeague.Application.Features.Fixtures.Queries;
 using LegendsLeague.Contracts.Common;
 using LegendsLeague.Tests.Unit.Testing.Fakes;
 using LegendsLeague.Tests.Unit.Testing.Seeding;
+using LegendsLeague.Tests.Unit.Testing.Mapping;
 using Microsoft.EntityFrameworkCore;
 
 namespace LegendsLeague.Tests.Unit.Application.Features.Fixtures.Queries;
 
 /// <summary>
 /// Unit tests for <see cref="GetSeriesListQueryHandler"/> covering paging, sorting, and year filter,
-/// updated to assert the PaginatedResult envelope.
+/// updated to assert the PaginatedResult envelope and to inject AutoMapper.
 /// </summary>
 public class GetSeriesListQueryHandlerTests
 {
@@ -19,8 +20,9 @@ public class GetSeriesListQueryHandlerTests
     {
         using var ctx = FakeFixturesDbContext.Create();
         await SeedAsync(ctx);
+        var mapper = TestMapper.Create();
 
-        var handler = new GetSeriesListQueryHandler(ctx);
+        var handler = new GetSeriesListQueryHandler(ctx, mapper);
         PaginatedResult<LegendsLeague.Contracts.Series.SeriesDto> result =
             await handler.Handle(new GetSeriesListQuery(), default);
 
@@ -38,8 +40,9 @@ public class GetSeriesListQueryHandlerTests
     {
         using var ctx = FakeFixturesDbContext.Create();
         await SeedAsync(ctx);
+        var mapper = TestMapper.Create();
 
-        var handler = new GetSeriesListQueryHandler(ctx);
+        var handler = new GetSeriesListQueryHandler(ctx, mapper);
         var result = await handler.Handle(new GetSeriesListQuery(SeasonYear: 2026, Page: 1, PageSize: 2), default);
 
         result.Items.Should().HaveCount(2);
@@ -54,8 +57,9 @@ public class GetSeriesListQueryHandlerTests
     {
         using var ctx = FakeFixturesDbContext.Create();
         await SeedAsync(ctx);
+        var mapper = TestMapper.Create();
 
-        var handler = new GetSeriesListQueryHandler(ctx);
+        var handler = new GetSeriesListQueryHandler(ctx, mapper);
         var result = await handler.Handle(new GetSeriesListQuery(Sort: "-name"), default);
 
         result.Items.Should().HaveCount(5);

@@ -3,12 +3,13 @@ using LegendsLeague.Application.Abstractions.Persistence;
 using LegendsLeague.Application.Features.Fixtures.Queries;
 using LegendsLeague.Tests.Unit.Testing.Fakes;
 using LegendsLeague.Tests.Unit.Testing.Seeding;
+using LegendsLeague.Tests.Unit.Testing.Mapping;
 using Microsoft.EntityFrameworkCore;
 
 namespace LegendsLeague.Tests.Unit.Application.Features.Fixtures.Queries;
 
 /// <summary>
-/// Unit tests for <see cref="GetSeriesByIdQueryHandler"/>.
+/// Unit tests for <see cref="GetSeriesByIdQueryHandler"/> with AutoMapper injection.
 /// </summary>
 public class GetSeriesByIdQueryHandlerTests
 {
@@ -17,9 +18,10 @@ public class GetSeriesByIdQueryHandlerTests
     {
         using var ctx = FakeFixturesDbContext.Create();
         await SeedAsync(ctx);
+        var mapper = TestMapper.Create();
 
         var existing = FixturesSeed.Series().First().Id;
-        var handler = new GetSeriesByIdQueryHandler(ctx);
+        var handler = new GetSeriesByIdQueryHandler(ctx, mapper);
 
         var dto = await handler.Handle(new GetSeriesByIdQuery(existing), default);
 
@@ -32,8 +34,9 @@ public class GetSeriesByIdQueryHandlerTests
     {
         using var ctx = FakeFixturesDbContext.Create();
         await SeedAsync(ctx);
+        var mapper = TestMapper.Create();
 
-        var handler = new GetSeriesByIdQueryHandler(ctx);
+        var handler = new GetSeriesByIdQueryHandler(ctx, mapper);
         var dto = await handler.Handle(new GetSeriesByIdQuery(Guid.NewGuid()), default);
 
         dto.Should().BeNull();

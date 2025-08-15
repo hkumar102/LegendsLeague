@@ -1,3 +1,4 @@
+using AutoMapper;
 using LegendsLeague.Application.Abstractions.Persistence;
 using LegendsLeague.Application.Common.Exceptions;
 using LegendsLeague.Contracts.Teams;
@@ -9,34 +10,27 @@ namespace LegendsLeague.Application.Features.Fixtures.Teams.Commands.CreateTeam;
 
 /// <summary>
 /// Command to create a real team within a specific series.
-/// Enforces unique team name per series (case-insensitive).
 /// </summary>
-/// <param name="SeriesId">The owning series identifier.</param>
-/// <param name="Name">Team name (unique per series; case-insensitive).</param>
-/// <param name="ShortName">Optional short code (<= 10 chars).</param>
 public sealed record CreateTeamCommand(Guid SeriesId, string Name, string? ShortName) : IRequest<RealTeamDto>;
 
-/// <summary>
-/// Handles <see cref="CreateTeamCommand"/> by inserting a <see cref="RealTeam"/> after validations.
-/// </summary>
 public sealed class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, RealTeamDto>
 {
     private readonly IFixturesDbContext _db;
+    private readonly IMapper _mapper;
 
-    /// <summary>Initializes a new handler.</summary>
-    public CreateTeamCommandHandler(IFixturesDbContext db) => _db = db;
+    public CreateTeamCommandHandler(IFixturesDbContext db, IMapper mapper)
+    {
+        _db = db;
+        _mapper = mapper;
+    }
 
-    /// <inheritdoc />
     public async Task<RealTeamDto> Handle(CreateTeamCommand request, CancellationToken ct)
     {
-        // Ensure series exists
         var seriesExists = await _db.Series.AsNoTracking().AnyAsync(s => s.Id == request.SeriesId, ct);
-        if (!seriesExists)
-            throw new NotFoundException($"Series '{request.SeriesId}' was not found.");
+        if (!seriesExists) throw new NotFoundException($"Series '{request.SeriesId}' was not found.");
 
         var normalizedName = request.Name.Trim();
 
-        // Uniqueness within series (ignore soft-deleted rows)
         var duplicate = await _db.RealTeams.AsNoTracking().AnyAsync(
             t => t.SeriesId == request.SeriesId
               && !t.IsDeleted
@@ -56,6 +50,6 @@ public sealed class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand
         await _db.RealTeams.AddAsync(entity, ct);
         await _db.SaveChangesAsync(ct);
 
-        return new RealTeamDto(entity.Id, entity.SeriesId, entity.Name, entity.ShortName);
+        return _mapper.Map<RealTeamDto>(entity);
     }
 }
