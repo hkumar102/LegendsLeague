@@ -3,11 +3,15 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using LegendsLeague.Application.Features.Fixtures.Queries;
 using LegendsLeague.Contracts.Series;
+using LegendsLeague.Application.Features.Fixtures.Commands.CreateSeries;
+using LegendsLeague.Application.Features.Fixtures.Commands.UpdateSeries;
+using LegendsLeague.Application.Features.Fixtures.Commands.DeleteSeries;
+using LegendsLeague.Application.Common.Exceptions;
 
 namespace LegendsLeague.Api.Controllers.Fixtures
 {
     /// <summary>
-    /// Read endpoints for real-world cricket series (e.g., IPL seasons).
+    /// Read/Write endpoints for real-world cricket series (e.g., IPL seasons).
     /// </summary>
     [ApiController]
     [Route("api/v1/series")]
@@ -16,24 +20,9 @@ namespace LegendsLeague.Api.Controllers.Fixtures
     {
         private readonly ISender _sender;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SeriesController"/>.
-        /// </summary>
-        /// <param name="sender">MediatR sender used to dispatch queries to the Application layer.</param>
         public SeriesController(ISender sender) => _sender = sender;
 
-        /// <summary>
-        /// Lists series with optional filtering, sorting, and pagination.
-        /// </summary>
-        /// <param name="seasonYear">Optional exact season year (e.g., 2026).</param>
-        /// <param name="search">Optional case-insensitive substring match on the series name.</param>
-        /// <param name="page">1-based page number (default 1).</param>
-        /// <param name="pageSize">Page size (default 20, max 100).</param>
-        /// <param name="sort">Sort key: name, -name, seasonYear, -seasonYear (default seasonYear asc, then name).</param>
-        /// <param name="ct">Cancellation token for the request.</param>
-        /// <returns>A list of matching series.</returns>
-        /// <response code="200">Returns the list of series.</response>
-        /// <response code="400">Validation errors for query parameters.</response>
+        /// <summary>Lists series with optional filtering, sorting, and pagination.</summary>
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<SeriesDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -45,25 +34,11 @@ namespace LegendsLeague.Api.Controllers.Fixtures
             [FromQuery] string? sort = null,
             CancellationToken ct = default)
         {
-            var result = await _sender.Send(new GetSeriesListQuery(
-                SeasonYear: seasonYear,
-                Search: search,
-                Page: page,
-                PageSize: pageSize,
-                Sort: sort
-            ), ct);
-
+            var result = await _sender.Send(new GetSeriesListQuery(seasonYear, search, page, pageSize, sort), ct);
             return Ok(result);
         }
 
-        /// <summary>
-        /// Gets details for a single series by its identifier.
-        /// </summary>
-        /// <param name="id">Series identifier.</param>
-        /// <param name="ct">Cancellation token for the request.</param>
-        /// <returns>The series if found; otherwise 404.</returns>
-        /// <response code="200">Returns the series.</response>
-        /// <response code="404">Series not found.</response>
+        /// <summary>Gets details for a single series by its identifier.</summary>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(SeriesDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -72,6 +47,69 @@ namespace LegendsLeague.Api.Controllers.Fixtures
             var dto = await _sender.Send(new GetSeriesByIdQuery(id), ct);
             if (dto is null) return NotFound();
             return Ok(dto);
+        }
+
+        /// <summary>Creates a new series.</summary>
+        [HttpPost]
+        [ProducesResponseType(typeof(SeriesDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<SeriesDto>> Create([FromBody] SeriesCreateRequest body, CancellationToken ct = default)
+        {
+            try
+            {
+                var dto = await _sender.Send(new CreateSeriesCommand(body.Name, body.SeasonYear), ct);
+                return CreatedAtAction(nameof(GetSeriesById), new { id = dto.Id }, dto);
+            }
+            catch (ConflictException ex)
+            {
+                return Conflict(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>Updates an existing series.</summary>
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(typeof(SeriesDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<SeriesDto>> Update([FromRoute] Guid id, [FromBody] SeriesUpdateRequest body, CancellationToken ct = default)
+        {
+            try
+            {
+                var dto = await _sender.Send(new UpdateSeriesCommand(id, body.Name, body.SeasonYear), ct);
+                return Ok(dto);
+            }
+            catch (NotFoundException)
+            {
+                return NotFound();
+            }
+            catch (ConflictException ex)
+            {
+                return Conflict(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>Deletes a series (optionally forcing deletion when dependencies exist).</summary>
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> Delete([FromRoute] Guid id, [FromQuery] bool force = false, CancellationToken ct = default)
+        {
+            try
+            {
+                await _sender.Send(new DeleteSeriesCommand(id, force), ct);
+                return NoContent();
+            }
+            catch (NotFoundException)
+            {
+                return NotFound();
+            }
+            catch (ConflictException ex)
+            {
+                return Conflict(new { error = ex.Message });
+            }
         }
     }
 }
