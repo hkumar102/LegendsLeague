@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using LegendsLeague.Infrastructure.Persistence.Fixtures;
 using LegendsLeague.Api.Security;
@@ -7,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using LegendsLeague.Application.Abstractions.Security;
 
+// Create the web application builder
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog basic console
