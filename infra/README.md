@@ -1,19 +1,12 @@
-Love that order — it mirrors the natural dependency flow (Domain → Contracts → Infrastructure → Application → API). Here’s a project‑by‑project task menu, broken down to class/enum/file level, with what’s done vs pending.
+Awesome callout. Here’s a clean, project‑by‑project task menu that includes the full Fixture setup, broken down to file level with current status.
 
-⸻
-
-0) Conventions (applies to all)
-	•	✅ Naming: snake_case in DB via convention
-	•	✅ Auditing fields + soft delete (domain + EF interceptors)
-	•	✅ DI split: Application vs Infrastructure
-	•	✅ API version prefix: /api/v1
-	•	🟨 Tests: unit in place for some features; integration pending
+Legend: ✅ done · 🟨 partial · ⬜ pending
 
 ⸻
 
 1) LegendsLeague.Domain
 
-1.1 Common (base types)
+1.1 Common
 	•	✅ Common/IAuditable.cs
 	•	✅ Common/ISoftDeletable.cs
 	•	✅ Common/AuditableEntity.cs
@@ -23,10 +16,10 @@ Love that order — it mirrors the natural dependency flow (Domain → Contracts
 	•	✅ Entities/Fixtures/Series.cs
 	•	✅ Entities/Fixtures/RealTeam.cs
 	•	✅ Entities/Fixtures/Fixture.cs
-	•	✅ Entities/Fixtures/Player.cs (NEW — to add)
-	•	Props: Id, SeriesId, RealTeamId, FullName, ShortName?, Country?, Role, Batting, Bowling
-	•	Navs: Series, RealTeam
-	•	Inherit: AuditableEntity (no soft delete unless you want it)
+	•	✅ Entities/Fixtures/Player.cs
+	•	✅ Entities/Fixtures/Enums/PlayerRole.cs
+	•	✅ Entities/Fixtures/Enums/BattingStyle.cs
+	•	✅ Entities/Fixtures/Enums/BowlingStyle.cs
 
 ⸻
 
@@ -53,39 +46,38 @@ Love that order — it mirrors the natural dependency flow (Domain → Contracts
 2.4 Common
 	•	✅ Common/PaginatedResult<T>.cs
 
+2.5 Fixtures (NEW)
+	•	⬜ Fixtures/FixtureDto.cs
+	•	⬜ Fixtures/FixtureCreateRequest.cs
+	•	⬜ Fixtures/FixtureUpdateRequest.cs
+
 ⸻
 
 3) LegendsLeague.Infrastructure
 
 3.1 DbContexts
-	•	✅ Persistence/Fixtures/FixturesDbContext.cs
+	•	✅ Persistence/Fixtures/FixturesDbContext.cs (schema: fixtures, snake_case, soft-delete filters)
 
 3.2 Model building
 	•	✅ Persistence/ModelBuilding/ModelBuilderSoftDeleteExtensions.cs
 	•	✅ Persistence/Extensions/NamingConventions.cs
 
-3.3 EntityTypeConfigurations (Fixtures schema)
+3.3 EntityTypeConfigurations
 	•	✅ Fixtures/Configurations/SeriesConfiguration.cs
 	•	✅ Fixtures/Configurations/RealTeamConfiguration.cs
 	•	✅ Fixtures/Configurations/FixtureConfiguration.cs
-	•	⬜ Fixtures/Configurations/PlayerConfiguration.cs (NEW — to add)
-	•	Table: players (schema: fixtures)
-	•	Keys/FKs: SeriesId → series(Id), RealTeamId → real_teams(Id)
-	•	Indexes: (SeriesId, RealTeamId), full_name (for ILIKE)
-	•	Required: FullName, Role
-	•	Optional: ShortName, Country, Batting, Bowling
+	•	✅ Fixtures/Configurations/PlayerConfiguration.cs
 
 3.4 Interceptors
 	•	✅ Interceptors/AuditingSaveChangesInterceptor.cs
 	•	✅ Interceptors/SoftDeleteSaveChangesInterceptor.cs
 
 3.5 DI & options
-	•	✅ Persistence/DependencyInjection.cs
-	•	Registers: FixturesDbContext, interceptors, IFixturesDbContext
+	•	✅ Persistence/DependencyInjection.cs (DbContext + interceptors + IFixturesDbContext mapping)
 
 3.6 Migrations (FixturesDbContext)
-	•	✅ Fixtures/Migrations/* for Series/RealTeam/Fixture initial
-	•	⬜ Add migration for players table (after 1.2 + 3.3)
+	•	✅ Initial migration (series/real_teams/fixtures/…)
+	•	⬜ Add migration if Fixture table needs new columns for API (e.g., venue, status, result fields)
 
 ⸻
 
@@ -94,90 +86,66 @@ Love that order — it mirrors the natural dependency flow (Domain → Contracts
 4.1 DI & Pipeline
 	•	✅ DependencyInjection.cs (MediatR, FluentValidation, AutoMapper, ValidationBehavior)
 	•	✅ Common/Behaviors/ValidationBehavior.cs
-	•	✅ Common/Mapping/MappingProfile.cs
-	•	✅ Series → SeriesDto
-	•	✅ RealTeam → RealTeamDto
-	•	⬜ Player → PlayerDto (after domain entity)
+	•	✅ Common/Mapping/MappingProfile.cs (Series, Team, Player; add Fixture mapping)
+	•	✅ Common/Extensions/PaginationExtensions.cs
 
 4.2 Abstractions
-	•	✅ Abstractions/Persistence/IFixturesDbContext.cs (DbSet, DbSet, DbSet)
-	•	✅ add DbSet<Player> once Player entity exists
-	•	✅ Abstractions/Security/ICurrentUser.cs
+	•	✅ Abstractions/Persistence/IFixturesDbContext.cs (Series, RealTeams, Fixtures, Players)
 
-4.3 Pagination helpers
-	•	✅ Common/Extensions/PaginationExtensions.cs (ToPaginatedResultAsync + AutoMapper overload)
+4.3 Series
+	•	✅ Queries: Series/Queries/GetSeriesListQuery.cs (Paginated), GetSeriesByIdQuery.cs
+	•	✅ Validators for queries
+	•	⬜ Commands: Series/Commands/{Create,Update,Delete}/… (+ validators, handlers)
 
-4.4 Fixtures: Series (read path)
-	•	✅ Features/Fixtures/Queries/GetSeriesListQuery.cs (returns PaginatedResult<SeriesDto>)
-	•	✅ Features/Fixtures/Queries/GetSeriesByIdQuery.cs
-	•	✅ Features/Fixtures/Queries/Validators/GetSeriesListQueryValidator.cs
-	•	✅ Features/Fixtures/Queries/Validators/GetSeriesByIdQueryValidator.cs
-	•	⬜ Commands (create/update/delete)
-	•	⬜ Features/Fixtures/Commands/Series/CreateSeriesCommand.cs (+ validator)
-	•	⬜ Features/Fixtures/Commands/Series/UpdateSeriesCommand.cs (+ validator)
-	•	⬜ Features/Fixtures/Commands/Series/DeleteSeriesCommand.cs (+ validator)
+4.4 Teams
+	•	✅ Commands: Teams/Commands/{CreateTeam,UpdateTeam,DeleteTeam}/…
+	•	✅ Queries: Teams/Queries/{GetTeamById,GetTeamsBySeries,SearchTeams}.cs
+	•	✅ Validators
 
-4.5 Fixtures: Teams (full path)
-	•	✅ Commands
-	•	✅ Teams/Commands/CreateTeam/CreateTeamCommand.cs (+ validator)
-	•	✅ Teams/Commands/UpdateTeam/UpdateTeamCommand.cs (+ validator)
-	•	✅ Teams/Commands/DeleteTeam/DeleteTeamCommand.cs (+ validator)
-	•	✅ Queries
-	•	✅ Teams/Queries/GetTeamByIdQuery.cs (+ validator)
-	•	✅ Teams/Queries/GetTeamsBySeriesQuery.cs (+ validator)
-	•	✅ Teams/Queries/SearchTeamsQuery.cs (+ validator)
+4.5 Players
+	•	✅ Commands: Players/Commands/{CreatePlayer,UpdatePlayer,DeletePlayer}/… (+ validators)
+	•	✅ Queries: Players/Queries/{GetPlayerById,GetPlayersBySeries,GetPlayersByTeam,SearchPlayers}.cs (+ validators)
+	•	✅ Mapping: Player → PlayerDto
 
-4.6 Fixtures: Players (NEW — pending)
-	•	⬜ Queries
-	•	⬜ Players/Queries/GetPlayerByIdQuery.cs (+ validator)
-	•	⬜ Players/Queries/GetPlayersBySeriesQuery.cs (+ validator, paginated)
-	•	⬜ Players/Queries/GetPlayersByTeamQuery.cs (+ validator, paginated)
-	•	⬜ Players/Queries/SearchPlayersQuery.cs (+ validator, paginated; ILIKE on name/shortName/country)
-	•	⬜ Commands
-	•	⬜ Players/Commands/CreatePlayer/CreatePlayerCommand.cs (+ validator)
-	•	⬜ Players/Commands/UpdatePlayer/UpdatePlayerCommand.cs (+ validator)
-	•	⬜ Players/Commands/DeletePlayer/DeletePlayerCommand.cs (+ validator)
-	•	⬜ Mapping
-	•	⬜ AutoMapper: Player → PlayerDto
+4.6 Fixtures (NEW)
+	•	⬜ Mapping: Fixture → FixtureDto
+	•	⬜ Queries:
+	•	Fixtures/Queries/GetFixtureByIdQuery.cs
+	•	Fixtures/Queries/GetFixturesBySeriesQuery.cs (Paged, filter by date range optional)
+	•	Fixtures/Queries/GetFixturesByTeamQuery.cs (Paged)
+	•	Fixtures/Queries/SearchFixturesQuery.cs (Paged, search by venue/opponents)
+	•	Validators for all
+	•	⬜ Commands:
+	•	Fixtures/Commands/CreateFixture/…
+	•	Fixtures/Commands/UpdateFixture/…
+	•	Fixtures/Commands/DeleteFixture/…
+	•	Validators for all
+	•	⬜ (Optional) Domain rules in handlers: prevent same team on both sides; time sanity; series/team cross‑validation
 
 ⸻
 
 5) LegendsLeague.Api
 
-5.1 Program & DI
-	•	✅ Program.cs
-	•	Serilog, Swagger, CORS, AddPersistence, AddApplicationServices, CurrentUser, health, apply migrations
+5.1 Program & Security
+	•	✅ Program.cs (Serilog, Swagger, CORS, AddPersistence, AddApplicationServices, CurrentUser, health, auto-migrate)
+	•	✅ Security/CurrentUserAccessor.cs
 
-5.2 Security
-	•	✅ Security/CurrentUserAccessor.cs (implements ICurrentUser)
+5.2 Controllers
+	•	✅ Controllers/Fixtures/SeriesController.cs (GET list paged, GET by id)
+	•	✅ Controllers/Fixtures/TeamsController.cs (GET by id, PUT, DELETE)
+	•	✅ Controllers/Fixtures/SeriesController.cs (series → teams endpoints)
+	•	✅ Controllers/Fixtures/PlayersController.cs (GET/PUT/DELETE by id)
+	•	✅ Controllers/Fixtures/SeriesPlayersController.cs (series/team‑scoped list + create)
+	•	⬜ Fixtures controllers (NEW)
+	•	Controllers/Fixtures/FixturesController.cs (GET/PUT/DELETE by id)
+	•	Controllers/Fixtures/SeriesFixturesController.cs (GET series fixtures [paged], GET series/team fixtures [paged], POST create)
 
-5.3 Controllers
-	•	✅ Controllers/Fixtures/SeriesController.cs
-	•	✅ GET /api/v1/series (paged list)
-	•	✅ GET /api/v1/series/{id}
-	•	✅ GET /api/v1/series/{seriesId}/teams
-	•	✅ POST /api/v1/series/{seriesId}/teams
-	•	⬜ POST/PUT/DELETE /api/v1/series (if you add Series commands)
-	•	✅ Controllers/Fixtures/TeamsController.cs
-	•	✅ GET /api/v1/teams/{id}
-	•	✅ PUT /api/v1/teams/{id}
-	•	✅ DELETE /api/v1/teams/{id}
-	•	⬜ GET /api/v1/teams (global search) (optional; currently via Application only)
-	•	⬜ Controllers/Fixtures/PlayersController.cs (NEW)
-	•	⬜ GET /api/v1/players/{id}
-	•	⬜ PUT /api/v1/players/{id}
-	•	⬜ DELETE /api/v1/players/{id}
-	•	⬜ GET /api/v1/series/{seriesId}/players
-	•	⬜ GET /api/v1/series/{seriesId}/teams/{teamId}/players
-	•	⬜ POST /api/v1/series/{seriesId}/players
-
-5.4 Swagger
-	•	✅ AddSwaggerGen basic
-	•	⬜ Grouping & summaries for Players/Series commands (optional polish)
+5.3 Swagger polish (optional)
+	•	⬜ Group ops, add examples for Fixture payloads
 
 ⸻
 
-6) LegendsLeague.Tests.Unit (separate project)
+6) LegendsLeague.Tests.Unit
 
 6.1 Helpers
 	•	✅ Testing/Fakes/FakeFixturesDbContext.cs
@@ -185,38 +153,38 @@ Love that order — it mirrors the natural dependency flow (Domain → Contracts
 	•	✅ Testing/Mapping/TestMapper.cs
 
 6.2 Series tests
-	•	✅ Queries
-	•	✅ GetSeriesListQueryHandlerTests.cs (PaginatedResult aware)
-	•	✅ GetSeriesByIdQueryHandlerTests.cs
-	•	⬜ Commands tests (once Series commands exist)
+	•	✅ Queries tests (paginated list, by id)
+	•	⬜ Commands tests
 
 6.3 Teams tests
-	•	✅ Queries
-	•	✅ GetTeamsBySeriesQueryHandlerTests.cs
-	•	⬜ Commands
-	•	⬜ CreateTeamCommandHandlerTests.cs
-	•	⬜ UpdateTeamCommandHandlerTests.cs
-	•	⬜ DeleteTeamCommandHandlerTests.cs
+	•	✅ Queries tests
+	•	⬜ Commands tests
 
-6.4 Players tests (after Players feature)
-	•	⬜ Queries & Commands
+6.4 Players tests
+	•	⬜ Queries tests
+	•	⬜ Commands tests
+
+6.5 Fixtures tests (NEW)
+	•	⬜ Queries tests (by id, by series, by team, search, paging)
+	•	⬜ Commands tests (create/update/delete, validation edge cases)
 
 ⸻
 
-Recommended next steps (in this project order)
-	1.	Domain
-	•	Add Player.cs (1.2)
-	2.	Infrastructure
-	•	Add PlayerConfiguration.cs (3.3)
-	•	Add migration for players (3.6)
-	3.	Application
-	•	Add DbSet<Player> to IFixturesDbContext (4.2)
-	•	Add AutoMapper map (4.1)
-	•	Add Players queries/commands/validators/handlers (4.6)
-	4.	API
-	•	Add PlayersController (5.3) with series‑scoped create + list, and resource get/put/delete
-	5.	Tests
-	•	Add Players unit tests (6.4)
-	•	Add Teams command tests (6.3)
+7) Tooling / Dev UX
+	•	✅ Postman collection + environment
+	•	⬜ VS Code .http smoke files
+	•	⬜ Minimal seed utility for local dev data
+	•	⬜ ProblemDetails error middleware (uniform 400/404/409)
+	•	⬜ CI (build + tests)
 
-If you tell me “start with Domain/Player”, I’ll ship that as the first chunk with a bash script.
+⸻
+
+Suggested next moves for Fixture
+	1.	Contracts: add FixtureDto, FixtureCreateRequest, FixtureUpdateRequest.
+	2.	Application Mapping: add Fixture → FixtureDto in MappingProfile.
+	3.	Queries: implement GetFixtureById, GetFixturesBySeries (paged), GetFixturesByTeam (paged), SearchFixtures (paged) + validators.
+	4.	Commands: implement create/update/delete + validators, with cross‑entity checks (series/team).
+	5.	API: add controllers: SeriesFixturesController + FixturesController.
+	6.	Tests: unit tests for handlers (happy paths + edge cases).
+
+Tell me where you want to start (most folks begin with 2.5 Contracts for Fixture), and I’ll drop code + bash in your usual format.
