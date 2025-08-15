@@ -1,0 +1,378 @@
+{
+  "info": {
+    "name": "LegendsLeague API",
+    "_postman_id": "8d5c3f2e-5f07-4f64-9f2a-aaaabbbbcccc",
+    "description": "Dev collection for LegendsLeague API (Series, Teams, Players). Uses X-User-Id for auditing in dev.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "{{baseUrl}}", "type": "string" },
+    { "key": "xUserId", "value": "{{xUserId}}", "type": "string" },
+    { "key": "seriesId", "value": "{{seriesId}}", "type": "string" },
+    { "key": "teamId", "value": "{{teamId}}", "type": "string" },
+    { "key": "playerId", "value": "{{playerId}}", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}", "disabled": false }
+            ],
+            "url": { "raw": "{{baseUrl}}/healthz", "host": ["{{baseUrl}}"], "path": ["healthz"] }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('health is ok', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.status).to.eql('ok');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Series",
+      "item": [
+        {
+          "name": "List series (paged, search, sort)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/series?search={{search}}&page={{page}}&pageSize={{pageSize}}&sort={{sort}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "series"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" },
+                { "key": "sort", "value": "" }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('has pagination shape', () => {",
+                  "  pm.expect(b).to.have.property('items');",
+                  "  pm.expect(b).to.have.property('total');",
+                  "});",
+                  "// Capture first seriesId for chaining",
+                  "if (Array.isArray(b.items) && b.items.length > 0) {",
+                  "  pm.collectionVariables.set('seriesId', b.items[0].id);",
+                  "  pm.test('captured seriesId', () => pm.expect(pm.collectionVariables.get('seriesId')).to.be.a('string'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get series by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/series/{{seriesId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "series", "{{seriesId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "List teams by series",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/series/{{seriesId}}/teams?page={{page}}&pageSize={{pageSize}}&search={{teamSearch}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "series", "{{seriesId}}", "teams"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "if (Array.isArray(b.items) && b.items.length > 0) {",
+                  "  pm.collectionVariables.set('teamId', b.items[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create team (in series)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/series/{{seriesId}}/teams",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "series", "{{seriesId}}", "teams"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mumbai Indians\",\n  \"shortName\": \"MI\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set('teamId', b.id);",
+                  "pm.test('captured teamId', () => pm.expect(pm.collectionVariables.get('teamId')).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get team by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/teams/{{teamId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "teams", "{{teamId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update team",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/teams/{{teamId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "teams", "{{teamId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mumbai Indians\",\n  \"shortName\": \"MI\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete team",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/teams/{{teamId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "teams", "{{teamId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Players",
+      "item": [
+        {
+          "name": "List players by series",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/series/{{seriesId}}/players?search={{playerSearch}}&page={{page}}&pageSize={{pageSize}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "series", "{{seriesId}}", "players"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List players by team (in series)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/series/{{seriesId}}/teams/{{teamId}}/players?search={{playerSearch}}&page={{page}}&pageSize={{pageSize}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "series", "{{seriesId}}", "teams", "{{teamId}}", "players"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create player (in series)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/series/{{seriesId}}/players",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "series", "{{seriesId}}", "players"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"realTeamId\": \"{{teamId}}\",\n  \"fullName\": \"Rohit Sharma\",\n  \"shortName\": \"R Sharma\",\n  \"country\": \"India\",\n  \"role\": 0,\n  \"batting\": 1,\n  \"bowling\": 3\n}"
+            },
+            "description": "Enums in body use Contracts values (ints). role/batting/bowling: see Contracts.Players enums."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set('playerId', b.id);",
+                  "pm.test('captured playerId', () => pm.expect(pm.collectionVariables.get('playerId')).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get player by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/players/{{playerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "players", "{{playerId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update player",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/players/{{playerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "players", "{{playerId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Rohit G. Sharma\",\n  \"shortName\": \"R Sharma\",\n  \"country\": \"India\",\n  \"role\": 0,\n  \"batting\": 2,\n  \"bowling\": 3,\n  \"realTeamId\": \"{{teamId}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete player",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{xUserId}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/players/{{playerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "players", "{{playerId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
