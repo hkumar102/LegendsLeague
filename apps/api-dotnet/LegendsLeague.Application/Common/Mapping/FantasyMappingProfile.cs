@@ -1,44 +1,82 @@
 using AutoMapper;
-using D = LegendsLeague.Domain.Entities.Fantasy;
-using C = LegendsLeague.Contracts.Fantasy;
+// Domain aliases
+using DEntities = LegendsLeague.Domain.Entities.Fantasy;
+using DEnums = LegendsLeague.Domain.Entities.Fantasy;
+// Contracts aliases
+using CFantasy = LegendsLeague.Contracts.Fantasy;
+using CRosters = LegendsLeague.Contracts.Fantasy.Rosters;
+using CScore = LegendsLeague.Contracts.Fantasy.Scoring;
 
 namespace LegendsLeague.Application.Common.Mapping;
 
 /// <summary>
 /// AutoMapper profile for Fantasy schema:
-/// Maps Domain entities ⇄ Contract DTOs and aligns enum types for wire safety.
+/// - Maps Domain entities → Contract DTOs
+/// - Bridges Domain enums ⇄ Contracts enums via name-based conversion (EnumMaps)
 /// </summary>
 public sealed class FantasyMappingProfile : Profile
 {
     public FantasyMappingProfile()
     {
-        // ===== Enums =====
-        CreateMap<D.LeagueMemberRole, C.LeagueMemberRole>()
-            .ConvertUsing(src => (C.LeagueMemberRole)src);
-        CreateMap<C.LeagueMemberRole, D.LeagueMemberRole>()
-            .ConvertUsing(src => (D.LeagueMemberRole)src);
+        // ===== Enums (name-based conversion via EnumMaps) =====
+        // League member roles & status
+        CreateMap<DEnums.LeagueMemberRole, CFantasy.LeagueMemberRole>()
+            .ConvertUsing(src => EnumMaps.ToContract(src));
+        CreateMap<CFantasy.LeagueMemberRole, DEnums.LeagueMemberRole>()
+            .ConvertUsing(src => EnumMaps.ToDomain(src));
 
-        CreateMap<D.DraftType, C.DraftType>()
-            .ConvertUsing(src => (C.DraftType)src);
-        CreateMap<C.DraftType, D.DraftType>()
-            .ConvertUsing(src => (D.DraftType)src);
+        CreateMap<DEnums.LeagueMemberStatus, CFantasy.LeagueMemberStatus>()
+            .ConvertUsing(src => EnumMaps.ToContract(src));
+        CreateMap<CFantasy.LeagueMemberStatus, DEnums.LeagueMemberStatus>()
+            .ConvertUsing(src => EnumMaps.ToDomain(src));
 
-        CreateMap<D.DraftStatus, C.DraftStatus>()
-            .ConvertUsing(src => (C.DraftStatus)src);
-        CreateMap<C.DraftStatus, D.DraftStatus>()
-            .ConvertUsing(src => (D.DraftStatus)src);
+        // Drafts
+        CreateMap<DEnums.DraftType, CFantasy.DraftType>()
+            .ConvertUsing(src => EnumMaps.ToContract(src));
+        CreateMap<CFantasy.DraftType, DEnums.DraftType>()
+            .ConvertUsing(src => EnumMaps.ToDomain(src));
 
-        CreateMap<D.RosterSlot, C.RosterSlot>()
-            .ConvertUsing(src => (C.RosterSlot)src);
-        CreateMap<C.RosterSlot, D.RosterSlot>()
-            .ConvertUsing(src => (D.RosterSlot)src);
+        CreateMap<DEnums.DraftStatus, CFantasy.DraftStatus>()
+            .ConvertUsing(src => EnumMaps.ToContract(src));
+        CreateMap<CFantasy.DraftStatus, DEnums.DraftStatus>()
+            .ConvertUsing(src => EnumMaps.ToDomain(src));
+
+        CreateMap<DEnums.DraftPickStatus, CFantasy.DraftPickStatus>()
+            .ConvertUsing(src => EnumMaps.ToContract(src));
+        CreateMap<CFantasy.DraftPickStatus, DEnums.DraftPickStatus>()
+            .ConvertUsing(src => EnumMaps.ToDomain(src));
+
+        // Scoring type (optional/for future)
+        CreateMap<DEnums.ScoringType, CFantasy.ScoringType>()
+            .ConvertUsing(src => EnumMaps.ToContract(src));
+        CreateMap<CFantasy.ScoringType, DEnums.ScoringType>()
+            .ConvertUsing(src => EnumMaps.ToDomain(src));
+
+        // Rosters
+        CreateMap<DEnums.RosterSlot, CFantasy.RosterSlot>()
+            .ConvertUsing(src => EnumMaps.ToContract(src));
+        CreateMap<CFantasy.RosterSlot, DEnums.RosterSlot>()
+            .ConvertUsing(src => EnumMaps.ToDomain(src));
+
+        CreateMap<DEnums.RosterStatus, CFantasy.RosterStatus>()
+            .ConvertUsing(src => EnumMaps.ToContract(src));
+        CreateMap<CFantasy.RosterStatus, DEnums.RosterStatus>()
+            .ConvertUsing(src => EnumMaps.ToDomain(src));
 
         // ===== Entities → DTOs =====
-        CreateMap<D.FantasyLeague, C.FantasyLeagueDto>();
-        CreateMap<D.LeagueMember,  C.LeagueMemberDto>();
-        CreateMap<D.LeagueTeam,    C.LeagueTeamDto>();
-        CreateMap<D.Draft,         C.DraftDto>();
-        CreateMap<D.DraftPick,     C.DraftPickDto>();
-        CreateMap<D.RosterPlayer,  C.RosterPlayerDto>();
+        // NOTE: Adjust entity/DTO types below if your actual names differ.
+        CreateMap<DEntities.FantasyLeague, CFantasy.FantasyLeagueDto>();
+        CreateMap<DEntities.LeagueMember, CFantasy.LeagueMemberDto>();
+        CreateMap<DEntities.LeagueTeam, CFantasy.LeagueTeamDto>();
+        CreateMap<DEntities.Draft, CFantasy.DraftDto>();
+        CreateMap<DEntities.DraftPick, CFantasy.DraftPickDto>();
+
+        // Rosters
+        CreateMap<DEntities.RosterPlayer, CRosters.RosterPlayerDto>();
+
+        // Scoring (if/when you expose via API)
+        CreateMap<DEntities.FantasyScore, CScore.FantasyScoreDto>();
+        CreateMap<DEntities.TeamFixtureScore, CScore.TeamFixtureScoreDto>();
+        // PlayerMatchStats lives in Fixtures domain; map in a Fixtures profile when needed
     }
 }

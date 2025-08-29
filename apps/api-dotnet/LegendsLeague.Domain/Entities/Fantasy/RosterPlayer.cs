@@ -3,27 +3,24 @@ using LegendsLeague.Domain.Common;
 namespace LegendsLeague.Domain.Entities.Fantasy;
 
 /// <summary>
-/// A mapping of a real player into a fantasy team roster with a slot and active window.
+/// A player on a fantasy team's roster (current or historical window).
+/// Cross-context PlayerId is a scalar (player lives in Fixtures context).
 /// </summary>
-public sealed class RosterPlayer : SoftDeletableEntity
+public class RosterPlayer : AuditableEntity
 {
     public Guid Id { get; set; }
 
-    /// <summary>FK → fantasy.league_teams.id.</summary>
     public Guid LeagueTeamId { get; set; }
-
-    /// <summary>FK → fixtures.players.id.</summary>
-    public Guid PlayerId { get; set; }
-
-    /// <summary>Slot assignment (BAT/BWL/AR/WK/BENCH).</summary>
-    public RosterSlot Slot { get; set; } = RosterSlot.BENCH;
-
-    /// <summary>When the player became active in this slot (UTC).</summary>
-    public DateTimeOffset? ActiveFromUtc { get; set; }
-
-    /// <summary>When the player stopped being active in this slot (UTC).</summary>
-    public DateTimeOffset? ActiveToUtc { get; set; }
-
-    // Navs
     public LeagueTeam LeagueTeam { get; set; } = default!;
+
+    public Guid PlayerId { get; set; } // Fixtures.Player (scalar FK across contexts)
+
+    public RosterSlot Slot { get; set; }
+    public RosterStatus Status { get; set; } = RosterStatus.Active;
+
+    /// <summary>When this roster assignment became effective (inclusive).</summary>
+    public DateTimeOffset EffectiveFromUtc { get; set; }
+
+    /// <summary>When this roster assignment ended (exclusive). Null means active.</summary>
+    public DateTimeOffset? EffectiveToUtc { get; set; }
 }
