@@ -35,9 +35,6 @@ public sealed class UpdateLeagueTeamCommandHandler : IRequestHandler<UpdateLeagu
             team.Name = request.Name!.Trim();
         }
 
-        if (request.DraftPosition.HasValue)
-            team.DraftPosition = request.DraftPosition.Value;
-
         await _db.SaveChangesAsync(ct);
         return _mapper.Map<LeagueTeamDto>(team);
     }

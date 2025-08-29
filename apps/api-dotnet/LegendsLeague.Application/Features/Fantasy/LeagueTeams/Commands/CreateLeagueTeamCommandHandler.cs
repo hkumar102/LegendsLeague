@@ -36,8 +36,7 @@ public sealed class CreateLeagueTeamCommandHandler : IRequestHandler<CreateLeagu
             Id = Guid.NewGuid(),
             LeagueId = request.LeagueId,
             Name = request.Name.Trim(),
-            OwnerUserId = request.OwnerUserId,
-            DraftPosition = request.DraftPosition
+            OwnerId = request.OwnerUserId
         };
 
         await _db.LeagueTeams.AddAsync(team, ct);

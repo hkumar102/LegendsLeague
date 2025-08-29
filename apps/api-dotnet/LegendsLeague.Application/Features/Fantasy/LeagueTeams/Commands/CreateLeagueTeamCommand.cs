@@ -7,6 +7,5 @@ namespace LegendsLeague.Application.Features.Fantasy.LeagueTeams.Commands;
 public sealed record CreateLeagueTeamCommand(
     Guid LeagueId,
     string Name,
-    Guid OwnerUserId,
-    int? DraftPosition
+    Guid OwnerUserId
 ) : IRequest<LeagueTeamDto>;

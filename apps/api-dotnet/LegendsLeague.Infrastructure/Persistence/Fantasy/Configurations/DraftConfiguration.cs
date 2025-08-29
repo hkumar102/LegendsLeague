@@ -8,12 +8,32 @@ public sealed class DraftConfiguration : IEntityTypeConfiguration<Draft>
 {
     public void Configure(EntityTypeBuilder<Draft> b)
     {
+        // Table
         b.ToTable("drafts");
-        b.HasKey(x => x.Id);
-        b.Property(x => x.LeagueId).IsRequired();
-        b.Property(x => x.Type).IsRequired();
-        b.Property(x => x.Status).IsRequired();
-        b.Property(x => x.StartsAtUtc).IsRequired();
-        b.HasIndex(x => new { x.LeagueId, x.Status });
+        b.HasKey(d => d.Id);
+
+        // Relationships
+        b.HasOne(d => d.League)
+            .WithOne(l => l.Draft)
+            .HasForeignKey<Draft>(d => d.LeagueId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        b.HasMany(d => d.Picks)
+            .WithOne(p => p.Draft)
+            .HasForeignKey(p => p.DraftId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Properties
+        b.Property(d => d.DraftType)
+            .HasConversion<int>() // store enum as int
+            .IsRequired();
+
+        b.Property(d => d.Status)
+            .HasConversion<int>()
+            .IsRequired();
+
+        b.Property(d => d.ScheduledAtUtc);
+        b.Property(d => d.StartedAtUtc);
+        b.Property(d => d.CompletedAtUtc);
     }
 }

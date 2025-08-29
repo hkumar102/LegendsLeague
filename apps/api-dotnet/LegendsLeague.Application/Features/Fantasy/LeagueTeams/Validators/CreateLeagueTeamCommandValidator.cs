@@ -10,6 +10,5 @@ public sealed class CreateLeagueTeamCommandValidator : AbstractValidator<CreateL
         RuleFor(x => x.LeagueId).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MinimumLength(2).MaximumLength(80);
         RuleFor(x => x.OwnerUserId).NotEmpty();
-        RuleFor(x => x.DraftPosition).GreaterThanOrEqualTo(1).When(x => x.DraftPosition.HasValue);
     }
 }

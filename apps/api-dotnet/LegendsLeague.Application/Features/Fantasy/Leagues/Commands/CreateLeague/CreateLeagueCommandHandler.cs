@@ -36,7 +36,7 @@ public sealed class CreateLeagueCommandHandler : IRequestHandler<CreateLeagueCom
             SeriesId = request.SeriesId,
             Name = request.Name.Trim(),
             MaxTeams = request.MaxTeams,
-            CommissionerUserId = request.CommissionerUserId
+            CommissionerId = request.CommissionerUserId
         };
 
         await _db.Leagues.AddAsync(league, ct);

@@ -1,33 +1,56 @@
 using LegendsLeague.Domain.Common;
+using LegendsLeague.Domain.Entities.Fixtures;
 
 namespace LegendsLeague.Domain.Entities.Fantasy;
 
 /// <summary>
-/// A single draft selection (round/pick), linking a fantasy team to a real player.
+/// Represents a single pick made during a fantasy draft.
+/// Each pick assigns a player to a league team at a specific slot.
 /// </summary>
-public sealed class DraftPick : AuditableEntity
+public class DraftPick : AuditableEntity
 {
     public Guid Id { get; set; }
 
-    /// <summary>FK → fantasy.drafts.id.</summary>
+    /// <summary>
+    /// The draft this pick belongs to.
+    /// </summary>
     public Guid DraftId { get; set; }
-
-    /// <summary>Round number (1..N) for Snake; Auction may leave null.</summary>
-    public int? RoundNo { get; set; }
-
-    /// <summary>Pick number within the round (1..N) for Snake; Auction may leave null.</summary>
-    public int? PickNo { get; set; }
-
-    /// <summary>Fantasy team that made the pick (FK → fantasy.league_teams.id).</summary>
-    public Guid LeagueTeamId { get; set; }
-
-    /// <summary>Selected real player (FK → fixtures.players.id).</summary>
-    public Guid PlayerId { get; set; }
-
-    /// <summary>When the pick was made.</summary>
-    public DateTimeOffset MadeAtUtc { get; set; }
-
-    // Navs
     public Draft Draft { get; set; } = default!;
+
+    /// <summary>
+    /// The league team making the pick.
+    /// </summary>
+    public Guid LeagueTeamId { get; set; }
     public LeagueTeam LeagueTeam { get; set; } = default!;
+
+    /// <summary>
+    /// The player chosen in this pick.
+    /// </summary>
+    public Guid PlayerId { get; set; }
+    public Player Player { get; set; } = default!;
+
+    /// <summary>
+    /// Overall pick number in the draft (1, 2, 3...).
+    /// </summary>
+    public int OverallPickNumber { get; set; }
+
+    /// <summary>
+    /// The round number (useful in snake drafts).
+    /// </summary>
+    public int RoundNumber { get; set; }
+
+    /// <summary>
+    /// Position of the pick within the round.
+    /// </summary>
+    public int PickInRound { get; set; }
+
+    /// <summary>
+    /// Current status of the pick (Pending, Completed, Skipped).
+    /// </summary>
+    public DraftPickStatus Status { get; set; } = DraftPickStatus.Pending;
+
+    /// <summary>
+    /// Timestamp when the pick was locked in.
+    /// </summary>
+    public DateTimeOffset? PickedAtUtc { get; set; }
 }
