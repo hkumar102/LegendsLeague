@@ -1,6 +1,7 @@
 using AutoMapper;
-using LegendsLeague.Application.Abstractions.Persistence;
+
 using LegendsLeague.Contracts.Fantasy;
+using LegendsLeague.Domain.Abstractions.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

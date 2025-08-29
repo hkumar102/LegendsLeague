@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LegendsLeague.Application.Abstractions.Persistence;
+
 using LegendsLeague.Application.Features.Fixtures.Teams.Queries;
 using LegendsLeague.Domain.Entities.Fixtures;
 using LegendsLeague.Tests.Unit.Testing.Fakes;

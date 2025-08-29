@@ -1,7 +1,7 @@
 using LegendsLeague.Domain.Entities.Fantasy;
 using Microsoft.EntityFrameworkCore;
 
-namespace LegendsLeague.Application.Abstractions.Persistence;
+namespace LegendsLeague.Domain.Abstractions.Persistence;
 
 /// <summary>
 /// Abstraction over the Fantasy persistence surface used by the Application layer.

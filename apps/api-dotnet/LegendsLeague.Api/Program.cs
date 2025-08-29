@@ -6,7 +6,7 @@ using LegendsLeague.Application;
 using LegendsLeague.Infrastructure.Persistence;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using LegendsLeague.Application.Abstractions.Security;
+using LegendsLeague.Domain.Abstractions.Security;
 
 // Create the web application builder
 var builder = WebApplication.CreateBuilder(args);

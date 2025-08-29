@@ -1,7 +1,8 @@
 using AutoMapper;
-using LegendsLeague.Application.Abstractions.Persistence;
+
 using LegendsLeague.Application.Common.Exceptions;
 using LegendsLeague.Contracts.Teams;
+using LegendsLeague.Domain.Abstractions.Persistence;
 using LegendsLeague.Domain.Entities.Fixtures;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

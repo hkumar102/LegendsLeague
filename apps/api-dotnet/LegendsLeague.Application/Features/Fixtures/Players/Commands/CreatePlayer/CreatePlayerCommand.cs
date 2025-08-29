@@ -1,7 +1,8 @@
 using AutoMapper;
-using LegendsLeague.Application.Abstractions.Persistence;
+
 using LegendsLeague.Application.Common.Exceptions;
-using LegendsLeague.Contracts.Players; // for PlayerDto only
+using LegendsLeague.Contracts.Players;
+using LegendsLeague.Domain.Abstractions.Persistence; // for PlayerDto only
 using LegendsLeague.Domain.Entities.Fixtures;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

@@ -1,10 +1,11 @@
 using FluentAssertions;
-using LegendsLeague.Application.Abstractions.Persistence;
+
 using LegendsLeague.Tests.Unit.Testing.Fakes;
 using LegendsLeague.Tests.Unit.Testing.Seeding;
 using LegendsLeague.Tests.Unit.Testing.Mapping;
 using Microsoft.EntityFrameworkCore;
 using LegendsLeague.Application.Features.Fixtures.Series.Queries;
+using LegendsLeague.Domain.Abstractions.Persistence;
 
 namespace LegendsLeague.Tests.Unit.Application.Features.Fixtures.Queries;
 

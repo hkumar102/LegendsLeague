@@ -1,4 +1,4 @@
-namespace LegendsLeague.Application.Abstractions.Security;
+namespace LegendsLeague.Domain.Abstractions.Security;
 
 /// <summary>
 /// Provides information about the current authenticated principal for the ongoing request.

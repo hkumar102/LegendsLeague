@@ -17,9 +17,10 @@ public sealed class LeagueMember : SoftDeletableEntity
 
     /// <summary>Member role (Commissioner/Member).</summary>
     public LeagueMemberRole Role { get; set; } = LeagueMemberRole.Member;
+   public LeagueMemberStatus Status { get; set; } = LeagueMemberStatus.Invited;
 
-    /// <summary>When the user joined this league.</summary>
-    public DateTimeOffset JoinedAtUtc { get; set; }
+    public DateTimeOffset? InvitedAtUtc { get; set; }
+    public DateTimeOffset? JoinedAtUtc { get; set; }
 
     // Navs
     public FantasyLeague League { get; set; } = default!;

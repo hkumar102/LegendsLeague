@@ -1,6 +1,5 @@
 using System.Security.Claims;
-using LegendsLeague.Application.Abstractions.Security;
-using Microsoft.AspNetCore.Http;
+using LegendsLeague.Domain.Abstractions.Security;
 
 namespace LegendsLeague.Api.Security;
 

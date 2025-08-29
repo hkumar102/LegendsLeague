@@ -1,7 +1,7 @@
 using LegendsLeague.Domain.Entities.Fixtures;
 using Microsoft.EntityFrameworkCore;
 
-namespace LegendsLeague.Application.Abstractions.Persistence;
+namespace LegendsLeague.Domain.Abstractions.Persistence;
 
 /// <summary>
 /// Abstraction for the Fixtures persistence surface used by the Application layer.

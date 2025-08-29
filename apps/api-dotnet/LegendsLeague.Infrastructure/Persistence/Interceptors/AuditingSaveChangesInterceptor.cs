@@ -1,4 +1,4 @@
-using LegendsLeague.Application.Abstractions.Security;
+using LegendsLeague.Domain.Abstractions.Security;
 using LegendsLeague.Domain.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;

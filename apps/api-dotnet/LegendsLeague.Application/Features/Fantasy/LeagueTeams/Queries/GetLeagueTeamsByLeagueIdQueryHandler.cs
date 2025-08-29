@@ -1,8 +1,9 @@
 using AutoMapper;
-using LegendsLeague.Application.Abstractions.Persistence;
+
 using LegendsLeague.Application.Common.Extensions;
 using LegendsLeague.Contracts.Common;
 using LegendsLeague.Contracts.Fantasy;
+using LegendsLeague.Domain.Abstractions.Persistence;
 using MediatR;
 
 namespace LegendsLeague.Application.Features.Fantasy.LeagueTeams.Queries;

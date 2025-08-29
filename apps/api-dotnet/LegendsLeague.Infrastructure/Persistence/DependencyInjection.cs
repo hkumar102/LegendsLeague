@@ -3,8 +3,8 @@ using LegendsLeague.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using LegendsLeague.Application.Abstractions.Persistence;
 using LegendsLeague.Infrastructure.Persistence.Fantasy;
+using LegendsLeague.Domain.Abstractions.Persistence;
 
 namespace LegendsLeague.Infrastructure.Persistence;
 
@@ -27,7 +27,7 @@ public static class DependencyInjection
         services.AddScoped<SoftDeleteSaveChangesInterceptor>();
 
         // Fixtures DbContext (existing)
-        services.AddDbContext<Fixtures.FixturesDbContext>((sp, opt) =>
+        services.AddDbContext<FixturesDbContext>((sp, opt) =>
         {
             opt.UseNpgsql(cs, npg =>
             {
@@ -53,6 +53,9 @@ public static class DependencyInjection
                 sp.GetRequiredService<AuditingSaveChangesInterceptor>(),
                 sp.GetRequiredService<SoftDeleteSaveChangesInterceptor>());
         });
+
+        services.AddScoped<IFantasyDbContext>(sp =>
+            sp.GetRequiredService<FantasyDbContext>());
 
         return services;
     }

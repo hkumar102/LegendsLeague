@@ -1,7 +1,8 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using LegendsLeague.Application.Abstractions.Persistence;
+
 using LegendsLeague.Contracts.Teams;
+using LegendsLeague.Domain.Abstractions.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

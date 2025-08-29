@@ -1,4 +1,4 @@
-using LegendsLeague.Application.Abstractions.Persistence;
+using LegendsLeague.Domain.Abstractions.Persistence;
 using LegendsLeague.Domain.Entities.Fixtures;
 using LegendsLeague.Infrastructure.Persistence.Extensions;
 using LegendsLeague.Infrastructure.Persistence.ModelBuilding;
@@ -44,7 +44,11 @@ namespace LegendsLeague.Infrastructure.Persistence.Fixtures
             modelBuilder.HasDefaultSchema("fixtures");
 
             // Load fluent mappings (tables, relationships, etc.)
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(FixturesDbContext).Assembly);
+            // only apply the FIxtures configs
+            modelBuilder.ApplyConfigurationsFromAssembly(
+                typeof(FixturesDbContext).Assembly,
+                t => t.Namespace != null &&
+                    t.Namespace.Contains("Persistence.Fixtures.Configurations", StringComparison.Ordinal));
 
             // Enforce snake_case for tables, columns, keys, FKs, and indexes
             modelBuilder.UseSnakeCaseNames();

@@ -1,9 +1,11 @@
 using AutoMapper;
-using LegendsLeague.Application.Abstractions.Persistence;
+
 using LegendsLeague.Contracts.Fantasy;
+using LegendsLeague.Domain.Abstractions.Persistence;
 using LegendsLeague.Domain.Entities.Fantasy;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using LeagueMemberRole = LegendsLeague.Domain.Entities.Fantasy.LeagueMemberRole;
 
 namespace LegendsLeague.Application.Features.Fantasy.Leagues.Commands.CreateLeague;
 
@@ -44,7 +46,7 @@ public sealed class CreateLeagueCommandHandler : IRequestHandler<CreateLeagueCom
             Id = Guid.NewGuid(),
             LeagueId = league.Id,
             UserId = request.CommissionerUserId,
-            Role = Domain.Entities.Fantasy.LeagueMemberRole.Commissioner,
+            Role = LeagueMemberRole.Commissioner,
             JoinedAtUtc = DateTimeOffset.UtcNow
         };
         await _db.LeagueMembers.AddAsync(member, ct);

@@ -21,7 +21,6 @@ namespace LegendsLeague.Infrastructure.Persistence.Fantasy.Migrations
                 .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("LegendsLeague.Domain.Entities.Fantasy.Draft", b =>
@@ -204,11 +203,15 @@ namespace LegendsLeague.Infrastructure.Persistence.Fantasy.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("deleted_by");
 
+                    b.Property<DateTimeOffset?>("InvitedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("invited_at_utc");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<DateTimeOffset>("JoinedAtUtc")
+                    b.Property<DateTimeOffset?>("JoinedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("joined_at_utc");
 
@@ -227,6 +230,10 @@ namespace LegendsLeague.Infrastructure.Persistence.Fantasy.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer")
                         .HasColumnName("role");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
@@ -371,276 +378,6 @@ namespace LegendsLeague.Infrastructure.Persistence.Fantasy.Migrations
                     b.ToTable("roster_players", "fantasy");
                 });
 
-            modelBuilder.Entity("LegendsLeague.Domain.Entities.Fixtures.Fixture", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AwayTeamId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("away_team_id");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTimeOffset?>("DeletedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at_utc");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("deleted_by");
-
-                    b.Property<Guid>("HomeTeamId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("home_team_id");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<DateTimeOffset?>("ModifiedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("modified_at_utc");
-
-                    b.Property<Guid?>("ModifiedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("modified_by");
-
-                    b.Property<Guid>("SeriesId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("series_id");
-
-                    b.Property<DateTimeOffset>("StartTimeUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time_utc");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_fixtures");
-
-                    b.HasIndex("AwayTeamId")
-                        .HasDatabaseName("i_x_fixtures_away_team_id");
-
-                    b.HasIndex("HomeTeamId")
-                        .HasDatabaseName("i_x_fixtures_home_team_id");
-
-                    b.HasIndex("SeriesId")
-                        .HasDatabaseName("i_x_fixtures_series_id");
-
-                    b.ToTable("fixtures", "fantasy");
-                });
-
-            modelBuilder.Entity("LegendsLeague.Domain.Entities.Fixtures.Player", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Batting")
-                        .HasColumnType("integer")
-                        .HasColumnName("batting");
-
-                    b.Property<int>("Bowling")
-                        .HasColumnType("integer")
-                        .HasColumnName("bowling");
-
-                    b.Property<string>("Country")
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)")
-                        .HasColumnName("country");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTimeOffset?>("DeletedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at_utc");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("deleted_by");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("full_name");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<DateTimeOffset?>("ModifiedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("modified_at_utc");
-
-                    b.Property<Guid?>("ModifiedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("modified_by");
-
-                    b.Property<Guid>("RealTeamId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("real_team_id");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer")
-                        .HasColumnName("role");
-
-                    b.Property<Guid>("SeriesId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("series_id");
-
-                    b.Property<string>("ShortName")
-                        .HasMaxLength(60)
-                        .HasColumnType("character varying(60)")
-                        .HasColumnName("short_name");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_players");
-
-                    b.HasIndex("FullName")
-                        .HasDatabaseName("ix_players_full_name");
-
-                    b.HasIndex("RealTeamId")
-                        .HasDatabaseName("i_x_players_real_team_id");
-
-                    b.HasIndex("SeriesId", "RealTeamId")
-                        .HasDatabaseName("ix_players_seriesid_teamid");
-
-                    b.ToTable("players", "fantasy");
-                });
-
-            modelBuilder.Entity("LegendsLeague.Domain.Entities.Fixtures.RealTeam", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTimeOffset?>("DeletedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at_utc");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("deleted_by");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<DateTimeOffset?>("ModifiedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("modified_at_utc");
-
-                    b.Property<Guid?>("ModifiedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("modified_by");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("name");
-
-                    b.Property<Guid>("SeriesId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("series_id");
-
-                    b.Property<string>("ShortName")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
-                        .HasColumnName("short_name");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_real_teams");
-
-                    b.HasIndex("SeriesId")
-                        .HasDatabaseName("i_x_real_teams_series_id");
-
-                    b.ToTable("real_teams", "fantasy");
-                });
-
-            modelBuilder.Entity("LegendsLeague.Domain.Entities.Fixtures.Series", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTimeOffset?>("ModifiedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("modified_at_utc");
-
-                    b.Property<Guid?>("ModifiedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("modified_by");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("citext")
-                        .HasColumnName("name");
-
-                    b.Property<int>("SeasonYear")
-                        .HasColumnType("integer")
-                        .HasColumnName("season_year");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_series");
-
-                    b.HasIndex("SeasonYear", "Name")
-                        .IsUnique()
-                        .HasDatabaseName("ux_series_season_year_name");
-
-                    b.ToTable("series", "fantasy");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAtUtc = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Name = "Indian Premier League",
-                            SeasonYear = 2026
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedAtUtc = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Name = "ICC T20 World Cup",
-                            SeasonYear = 2026
-                        });
-                });
-
             modelBuilder.Entity("LegendsLeague.Domain.Entities.Fantasy.Draft", b =>
                 {
                     b.HasOne("LegendsLeague.Domain.Entities.Fantasy.FantasyLeague", "League")
@@ -710,69 +447,6 @@ namespace LegendsLeague.Infrastructure.Persistence.Fantasy.Migrations
                     b.Navigation("LeagueTeam");
                 });
 
-            modelBuilder.Entity("LegendsLeague.Domain.Entities.Fixtures.Fixture", b =>
-                {
-                    b.HasOne("LegendsLeague.Domain.Entities.Fixtures.RealTeam", "AwayTeam")
-                        .WithMany()
-                        .HasForeignKey("AwayTeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("f_k_fixtures_real_teams_away_team_id");
-
-                    b.HasOne("LegendsLeague.Domain.Entities.Fixtures.RealTeam", "HomeTeam")
-                        .WithMany()
-                        .HasForeignKey("HomeTeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("f_k_fixtures_real_teams_home_team_id");
-
-                    b.HasOne("LegendsLeague.Domain.Entities.Fixtures.Series", "Series")
-                        .WithMany("Fixtures")
-                        .HasForeignKey("SeriesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("f_k_fixtures_series_series_id");
-
-                    b.Navigation("AwayTeam");
-
-                    b.Navigation("HomeTeam");
-
-                    b.Navigation("Series");
-                });
-
-            modelBuilder.Entity("LegendsLeague.Domain.Entities.Fixtures.Player", b =>
-                {
-                    b.HasOne("LegendsLeague.Domain.Entities.Fixtures.RealTeam", "RealTeam")
-                        .WithMany()
-                        .HasForeignKey("RealTeamId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("f_k_players_real_teams_real_team_id");
-
-                    b.HasOne("LegendsLeague.Domain.Entities.Fixtures.Series", "Series")
-                        .WithMany()
-                        .HasForeignKey("SeriesId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("f_k_players_series_series_id");
-
-                    b.Navigation("RealTeam");
-
-                    b.Navigation("Series");
-                });
-
-            modelBuilder.Entity("LegendsLeague.Domain.Entities.Fixtures.RealTeam", b =>
-                {
-                    b.HasOne("LegendsLeague.Domain.Entities.Fixtures.Series", "Series")
-                        .WithMany("RealTeams")
-                        .HasForeignKey("SeriesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("f_k_real_teams_series_series_id");
-
-                    b.Navigation("Series");
-                });
-
             modelBuilder.Entity("LegendsLeague.Domain.Entities.Fantasy.Draft", b =>
                 {
                     b.Navigation("Picks");
@@ -790,13 +464,6 @@ namespace LegendsLeague.Infrastructure.Persistence.Fantasy.Migrations
             modelBuilder.Entity("LegendsLeague.Domain.Entities.Fantasy.LeagueTeam", b =>
                 {
                     b.Navigation("Roster");
-                });
-
-            modelBuilder.Entity("LegendsLeague.Domain.Entities.Fixtures.Series", b =>
-                {
-                    b.Navigation("Fixtures");
-
-                    b.Navigation("RealTeams");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,3 +1,4 @@
+using LegendsLeague.Domain.Abstractions.Persistence;
 using LegendsLeague.Domain.Entities.Fantasy;
 using LegendsLeague.Infrastructure.Persistence.Extensions;
 using LegendsLeague.Infrastructure.Persistence.ModelBuilding;
@@ -9,7 +10,7 @@ namespace LegendsLeague.Infrastructure.Persistence.Fantasy;
 /// EF Core DbContext for the Fantasy bounded context (schema: <c>fantasy</c>).
 /// Applies snake_case naming and global soft-delete filters.
 /// </summary>
-public sealed class FantasyDbContext : DbContext
+public sealed class FantasyDbContext : DbContext, IFantasyDbContext
 {
     /// <summary>ctor</summary>
     public FantasyDbContext(DbContextOptions<FantasyDbContext> options) : base(options) { }
@@ -24,7 +25,11 @@ public sealed class FantasyDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("fantasy");
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(FantasyDbContext).Assembly);
+        // only apply the Fantasy configs
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(FantasyDbContext).Assembly,
+            t => t.Namespace != null &&
+                t.Namespace.Contains("Persistence.Fantasy.Configurations", StringComparison.Ordinal));
         modelBuilder.UseSnakeCaseNames();
         modelBuilder.ApplySoftDeleteQueryFilters();
         base.OnModelCreating(modelBuilder);

@@ -1,4 +1,5 @@
-using LegendsLeague.Application.Abstractions.Persistence;
+
+using LegendsLeague.Domain.Abstractions.Persistence;
 using LegendsLeague.Domain.Entities.Fixtures;
 using Microsoft.EntityFrameworkCore;
 
