@@ -1,13 +1,12 @@
 namespace LegendsLeague.Domain.Entities.Fantasy;
 
 /// <summary>
-/// Centralized Fantasy enums for contracts. 
-/// Note: existing numeric values are preserved; new values appended.
+/// Centralized Fantasy enums for domain. 
+/// NOTE: Values mirror Contracts exactly. Do not change existing numeric values.
 /// </summary>
 public static class _FantasyEnumsAnchor { }
 
 /// <summary>Role of a member within a fantasy league.</summary>
-/// <remarks>Preserve existing values: Commissioner=1, Member=2; add CoCommissioner=3.</remarks>
 public enum LeagueMemberRole
 {
     Commissioner   = 1,
